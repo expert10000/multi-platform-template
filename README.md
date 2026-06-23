@@ -6,6 +6,7 @@ It keeps the same practical boundaries:
 
 - `apps/desktop` - Electron shell for local workspace state, native file access, and SQLite.
 - `apps/web` - React web app for the analytics dashboard and workspace UI.
+- `apps/mobile` - Expo/React Native mobile shell.
 - `packages/core` - shared domain model and analytics contracts.
 - `packages/ui` - shared React UI primitives.
 - `packages/workspace` - repository layer for projects, datasets, jobs, reports, and users.
@@ -21,6 +22,7 @@ It keeps the same practical boundaries:
 
 - Desktop: Electron + React + SQLite.
 - Web: Vite + React.
+- Mobile: Expo + React Native.
 - Shared code: TypeScript workspace packages.
 - Application database: SQLite.
 - Business data: CSV files imported by users.
@@ -63,6 +65,12 @@ Start the desktop app:
 
 ```bash
 npm run dev:desktop
+```
+
+Start the mobile app:
+
+```bash
+npm run dev:mobile
 ```
 
 Run a sample KPI job:

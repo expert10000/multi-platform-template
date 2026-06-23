@@ -4,6 +4,7 @@
 analysis-workspace-template/
 ├─ apps/
 │  ├─ desktop/          # Electron shell
+│  ├─ mobile/           # Expo / React Native app
 │  └─ web/              # React web app
 ├─ packages/
 │  ├─ core/             # shared domain model

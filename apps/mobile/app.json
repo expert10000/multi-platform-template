@@ -1,0 +1,23 @@
+{
+  "expo": {
+    "name": "Enterprise Analytics",
+    "slug": "enterprise-analytics-workspace",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "enterpriseanalytics",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.enterpriseanalytics.workspace"
+    },
+    "android": {
+      "package": "com.enterpriseanalytics.workspace"
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}

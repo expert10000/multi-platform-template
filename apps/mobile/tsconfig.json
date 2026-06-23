@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "moduleResolution": "Bundler",
+    "types": [
+      "react"
+    ],
+    "noEmit": true
+  },
+  "include": [
+    "App.tsx",
+    "src"
+  ]
+}

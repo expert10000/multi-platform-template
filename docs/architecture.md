@@ -12,6 +12,10 @@ apps/web
   -> React workspace UI
   -> shared domain model
 
+apps/mobile
+  -> Expo / React Native workspace UI
+  -> shared domain model
+
 services/worker-python
   -> Pandas CSV analysis
   -> JSON / HTML / PDF-ready output

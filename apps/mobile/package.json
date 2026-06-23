@@ -1,0 +1,28 @@
+{
+  "name": "@enterprise-analytics/mobile",
+  "private": true,
+  "version": "0.1.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "npm run typecheck"
+  },
+  "dependencies": {
+    "@enterprise-analytics/core": "0.1.0",
+    "expo": "~54.0.0",
+    "lucide-react-native": "^1.21.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-native": "0.81.5",
+    "react-native-svg": "15.12.1",
+    "react-native-web": "^0.21.2"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.10",
+    "typescript": "^5.9.3"
+  }
+}
