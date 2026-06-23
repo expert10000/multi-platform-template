@@ -1,0 +1,14 @@
+node_modules/
+dist/
+build/
+coverage/
+.vite/
+.DS_Store
+reports/
+*.sqlite
+*.sqlite3
+*.db
+__pycache__/
+.pytest_cache/
+.venv/
+venv/

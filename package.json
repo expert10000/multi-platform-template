@@ -1,0 +1,44 @@
+{
+  "name": "analysis-workspace-template",
+  "private": true,
+  "version": "0.1.0",
+  "license": "Apache-2.0",
+  "description": "Enterprise analytics workspace template with Electron, React, SQLite, CSV import, and a Python analysis worker.",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "services/worker-api-contract",
+    "services/worker-node"
+  ],
+  "scripts": {
+    "predev:web": "npm run build:packages",
+    "dev:web": "npm --workspace @enterprise-analytics/web run dev",
+    "predev:desktop": "npm run build:packages",
+    "dev:desktop": "npm --workspace @enterprise-analytics/desktop run dev",
+    "build:web": "npm --workspace @enterprise-analytics/web run build",
+    "build:desktop": "npm --workspace @enterprise-analytics/desktop run build",
+    "build:packages": "npm --workspace @enterprise-analytics/core run build && npm --workspace @enterprise-analytics/ui run build && npm --workspace @enterprise-analytics/workspace run build",
+    "build:services": "npm --workspace @enterprise-analytics/worker-api-contract run build && npm --workspace @enterprise-analytics/worker-node run build",
+    "build": "npm run build:packages && npm run build:services && npm run build:web && npm run build:desktop",
+    "worker:kpi": "python services/worker-python/service/main.py --job kpi --input sample-data/online-retail.csv --output reports/kpi-analysis.json",
+    "worker:kpi:superstore": "python services/worker-python/service/main.py --job kpi --input sample-data/real/superstore-sales/train.csv --output reports/superstore-kpi-analysis.json",
+    "worker:kpi:online-retail": "python services/worker-python/service/main.py --job kpi --input \"sample-data/real/online-retail/Online Retail.xlsx\" --output reports/online-retail-kpi-analysis.json",
+    "worker:trend": "python services/worker-python/service/main.py --job trend --input sample-data/superstore-sales.csv --output reports/trend-analysis.json",
+    "worker:report": "python services/worker-python/service/main.py --job report --input sample-data/online-retail.csv --output reports/executive-summary.html",
+    "worker:node:import": "npm --workspace @enterprise-analytics/worker-node run demo:import",
+    "worker:node:validate": "npm --workspace @enterprise-analytics/worker-node run demo:validate",
+    "worker:node:email": "npm --workspace @enterprise-analytics/worker-node run demo:email",
+    "docker:web:build": "docker build -f docker/Dockerfile.web -t enterprise-analytics-web .",
+    "docker:web:run": "docker run --rm -p 8080:80 enterprise-analytics-web",
+    "docker:compose": "docker compose -f docker/docker-compose.yml up --build"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "concurrently": "^9.2.1",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "packageManager": "npm@11.0.0"
+}

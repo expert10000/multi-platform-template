@@ -1,0 +1,34 @@
+FROM node:24-bookworm-slim AS build
+
+WORKDIR /app
+
+ENV ELECTRON_SKIP_BINARY_DOWNLOAD=1
+
+COPY package.json package-lock.json tsconfig.base.json ./
+COPY apps/web/package.json apps/web/package.json
+COPY apps/desktop/package.json apps/desktop/package.json
+COPY packages/core/package.json packages/core/package.json
+COPY packages/ui/package.json packages/ui/package.json
+COPY packages/workspace/package.json packages/workspace/package.json
+COPY services/worker-api-contract/package.json services/worker-api-contract/package.json
+COPY services/worker-node/package.json services/worker-node/package.json
+
+RUN npm ci
+
+COPY apps/web apps/web
+COPY packages/core packages/core
+COPY packages/ui packages/ui
+COPY packages/workspace packages/workspace
+COPY tsconfig.base.json tsconfig.base.json
+
+RUN npm run build:packages && npm run build:web
+
+FROM nginx:1.27-alpine AS runtime
+
+COPY docker/nginx.web.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/apps/web/dist /usr/share/nginx/html
+
+EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget -qO- http://127.0.0.1/ >/dev/null || exit 1

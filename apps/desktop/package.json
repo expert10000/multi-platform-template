@@ -1,0 +1,24 @@
+{
+  "name": "@enterprise-analytics/desktop",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "concurrently \"npm --workspace @enterprise-analytics/web run dev\" \"npm --workspace @enterprise-analytics/desktop run electron:dev\"",
+    "electron:dev": "npm run build && cross-env ANALYTICS_WEB_URL=http://127.0.0.1:5174 electron .",
+    "build": "tsc -p tsconfig.json",
+    "start": "electron ."
+  },
+  "dependencies": {
+    "@enterprise-analytics/core": "0.1.0",
+    "@enterprise-analytics/workspace": "0.1.0",
+    "electron": "^39.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "concurrently": "^9.2.1",
+    "cross-env": "^7.0.3",
+    "typescript": "^5.9.3"
+  }
+}

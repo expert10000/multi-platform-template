@@ -1,0 +1,23 @@
+{
+  "name": "@enterprise-analytics/worker-node",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/main.js",
+    "dev": "tsx src/main.ts",
+    "demo:import": "node dist/main.js --request examples/csv-import.request.json",
+    "demo:validate": "node dist/main.js --request examples/validate-superstore.request.json",
+    "demo:email": "node dist/main.js --request examples/email-generate.request.json"
+  },
+  "dependencies": {
+    "@enterprise-analytics/worker-api-contract": "0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.3"
+  }
+}

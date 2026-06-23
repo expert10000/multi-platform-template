@@ -1,0 +1,137 @@
+# Enterprise Analytics Workspace Template
+
+This template mirrors the Math3D style of architecture, but changes the domain to an enterprise analytics workspace.
+
+It keeps the same practical boundaries:
+
+- `apps/desktop` - Electron shell for local workspace state, native file access, and SQLite.
+- `apps/web` - React web app for the analytics dashboard and workspace UI.
+- `packages/core` - shared domain model and analytics contracts.
+- `packages/ui` - shared React UI primitives.
+- `packages/workspace` - repository layer for projects, datasets, jobs, reports, and users.
+- `services/worker-python` - Pandas worker for KPI, trend, and report generation jobs.
+- `services/worker-api-contract` - shared request/result contract for all workers.
+- `services/worker-node` - Node worker for CSV import, validation, transformations, notifications, and email generation.
+- `sample-data` - CSV business data for sales, inventory, and production examples.
+- `sample-data/real` - larger real-world retail datasets extracted from user-provided archives.
+- `docker` - containerized worker/runtime entrypoints.
+- `docs` - architecture and platform notes.
+
+## Platform Stack
+
+- Desktop: Electron + React + SQLite.
+- Web: Vite + React.
+- Shared code: TypeScript workspace packages.
+- Application database: SQLite.
+- Business data: CSV files imported by users.
+- Worker: Python + Pandas for analytics.
+- Worker: Node for JavaScript-native workflow automation.
+- Reports: JSON for machine-readable results, HTML/PDF-ready summaries for executives.
+
+## Data Model
+
+SQLite stores application state:
+
+- `projects`
+- `datasets`
+- `jobs`
+- `reports`
+- `users`
+
+CSV and Excel files store business facts:
+
+- sales revenue and cost
+- inventory stock and reorder levels
+- production output and downtime
+- real retail transactions and Superstore orders
+
+## Run
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start the web app:
+
+```bash
+npm run dev:web
+```
+
+Start the desktop app:
+
+```bash
+npm run dev:desktop
+```
+
+Run a sample KPI job:
+
+```bash
+python services/worker-python/service/main.py --job kpi --input sample-data/online-retail.csv --output reports/kpi-analysis.json
+```
+
+Run KPI jobs against the real imported datasets:
+
+```bash
+python services/worker-python/service/main.py --job kpi --input sample-data/real/superstore-sales/train.csv --output reports/superstore-kpi-analysis.json
+python services/worker-python/service/main.py --job kpi --input "sample-data/real/online-retail/Online Retail.xlsx" --output reports/online-retail-kpi-analysis.json
+```
+
+Run Node workflow jobs:
+
+```bash
+npm run worker:node:import
+npm run worker:node:validate
+npm run worker:node:email
+```
+
+Run the web app in Docker:
+
+```bash
+npm run docker:web:build
+npm run docker:web:run
+```
+
+Or use Compose:
+
+```bash
+npm run docker:compose
+```
+
+## Architecture Flow
+
+```text
+CSV import
+  -> Asset Browser
+  -> SQLite metadata
+  -> Worker Job
+  -> Analysis result
+  -> Report
+  -> Dashboard
+```
+
+The starter UI shows:
+
+- project, dataset, job, and report counts
+- revenue, profit, and growth cards
+- dataset/job/report lists
+- realistic enterprise job types: KPI Analysis, Trend Analysis, Report Generation
+- real sample datasets: Online Retail and Superstore Sales
+
+## Worker Split
+
+Python worker:
+
+- Pandas / NumPy / Polars-style analytics
+- forecasting
+- CSV and Excel processing
+- PDF or HTML reports
+
+Node worker:
+
+- CSV import previews
+- data validation
+- lightweight transformations
+- notifications
+- email draft generation

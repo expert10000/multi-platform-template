@@ -1,0 +1,21 @@
+{
+  "id": "node-validate-superstore-001",
+  "kind": "data.validate",
+  "runtime": "node",
+  "input": {
+    "path": "sample-data/real/superstore-sales/train.csv",
+    "mediaType": "text/csv"
+  },
+  "output": {
+    "path": "reports/node-superstore-validation.json",
+    "mediaType": "application/json"
+  },
+  "params": {
+    "requiredColumns": [
+      "Order Date",
+      "Region",
+      "Sales"
+    ]
+  },
+  "requestedAt": "2026-06-23T00:00:00.000Z"
+}

@@ -1,0 +1,17 @@
+{
+  "id": "node-csv-import-001",
+  "kind": "csv.import",
+  "runtime": "node",
+  "input": {
+    "path": "sample-data/real/superstore-sales/train.csv",
+    "mediaType": "text/csv"
+  },
+  "output": {
+    "path": "reports/node-csv-import-summary.json",
+    "mediaType": "application/json"
+  },
+  "params": {
+    "previewRows": 3
+  },
+  "requestedAt": "2026-06-23T00:00:00.000Z"
+}

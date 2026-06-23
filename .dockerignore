@@ -1,0 +1,15 @@
+.git
+node_modules
+apps/*/node_modules
+packages/*/node_modules
+services/*/node_modules
+dist
+apps/*/dist
+packages/*/dist
+services/*/dist
+reports
+coverage
+.vite
+*.log
+Dockerfile*
+docker-compose*.yml

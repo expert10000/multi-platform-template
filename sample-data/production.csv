@@ -1,0 +1,5 @@
+machine,output,downtime
+M1,1000,15
+M2,900,45
+M3,1120,20
+M4,760,80

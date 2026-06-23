@@ -1,0 +1,17 @@
+{
+  "id": "node-email-generate-001",
+  "kind": "email.generate",
+  "runtime": "node",
+  "output": {
+    "path": "reports/node-email-draft.json",
+    "mediaType": "application/json"
+  },
+  "params": {
+    "to": [
+      "analytics-lead@example.com"
+    ],
+    "subject": "Sales KPI analysis is ready",
+    "message": "The Superstore sales validation completed successfully and is ready for KPI analysis."
+  },
+  "requestedAt": "2026-06-23T00:00:00.000Z"
+}
