@@ -4,6 +4,8 @@
   "version": "0.1.0",
   "license": "Apache-2.0",
   "author": "Enterprise Analytics",
+  "homepage": "https://github.com/expert10000/multi-platform-template",
+  "desktopName": "enterprise-analytics-workspace",
   "description": "Enterprise analytics workspace template with Electron, React, SQLite, CSV import, and a Python analysis worker.",
   "workspaces": [
     "apps/*",
@@ -25,6 +27,7 @@
     "build:services": "npm --workspace @enterprise-analytics/worker-api-contract run build && npm --workspace @enterprise-analytics/worker-node run build",
     "build": "npm run build:packages && npm run build:services && npm run build:web && npm run build:desktop && npm run build:mobile",
     "package:desktop:win": "npm run build:packages && npm run build:web && npm run build:desktop && electron-builder --win nsis --x64 --config electron-builder.yml",
+    "package:desktop:linux": "npm run build:packages && npm run build:web && npm run build:desktop && electron-builder --linux AppImage deb rpm --x64 --config electron-builder.yml",
     "worker:kpi": "python services/worker-python/service/main.py --job kpi --input sample-data/online-retail.csv --output reports/kpi-analysis.json",
     "worker:kpi:superstore": "python services/worker-python/service/main.py --job kpi --input sample-data/real/superstore-sales/train.csv --output reports/superstore-kpi-analysis.json",
     "worker:kpi:online-retail": "python services/worker-python/service/main.py --job kpi --input \"sample-data/real/online-retail/Online Retail.xlsx\" --output reports/online-retail-kpi-analysis.json",
@@ -35,6 +38,7 @@
     "worker:node:email": "npm --workspace @enterprise-analytics/worker-node run demo:email",
     "docker:web:build": "docker build -f docker/Dockerfile.web -t enterprise-analytics-web .",
     "docker:web:run": "docker run --rm -p 8080:80 enterprise-analytics-web",
+    "docker:desktop:linux:build": "docker build -f docker/Dockerfile.desktop-linux -t enterprise-analytics-desktop-linux .",
     "docker:compose": "docker compose -f docker/docker-compose.yml up --build"
   },
   "dependencies": {

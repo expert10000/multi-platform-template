@@ -8,6 +8,7 @@ apps/*/dist
 packages/*/dist
 services/*/dist
 reports
+release
 coverage
 .vite
 *.log

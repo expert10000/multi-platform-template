@@ -36,6 +36,21 @@ npm run package:desktop:win
 
 The setup program is written to `release/desktop/Enterprise Analytics Workspace Setup 0.1.0.exe`.
 
+Linux packages:
+
+```bash
+npm run package:desktop:linux
+```
+
+This writes `.AppImage`, `.deb`, and `.rpm` packages to `release/desktop`.
+
+Because the desktop app uses SQLite through a native Node module, build Linux packages on Linux or inside Docker so `better-sqlite3` is compiled for Linux:
+
+```bash
+npm run docker:desktop:linux:build
+docker run --rm -v "${PWD}/release/desktop-linux:/workspace/release/desktop" enterprise-analytics-desktop-linux
+```
+
 Desktop icon:
 
 ```powershell

@@ -38,6 +38,26 @@ win:
         - x64
   artifactName: ${productName} Setup ${version}.${ext}
 
+linux:
+  icon: apps/desktop/assets/icon.png
+  category: Office
+  executableName: enterprise-analytics-workspace
+  syncDesktopName: true
+  maintainer: Enterprise Analytics
+  synopsis: Enterprise analytics workspace
+  description: Enterprise analytics workspace template with Electron, React, SQLite, CSV import, and worker services.
+  target:
+    - target: AppImage
+      arch:
+        - x64
+    - target: deb
+      arch:
+        - x64
+    - target: rpm
+      arch:
+        - x64
+  artifactName: enterprise-analytics-workspace-${version}-${arch}.${ext}
+
 nsis:
   installerIcon: apps/desktop/assets/icon.ico
   uninstallerIcon: apps/desktop/assets/icon.ico
