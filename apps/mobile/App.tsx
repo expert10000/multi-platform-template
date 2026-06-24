@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import { SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { BarChart3, Database, FileText, Play, Settings } from "lucide-react-native";
 import { demoDashboardSnapshot, formatCurrency, formatPercent, type DashboardSnapshot } from "@enterprise-analytics/core";
 
@@ -26,7 +26,6 @@ export default function App() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#f4f6f3" />
       <View style={styles.shell}>
         <View style={styles.topbar}>
           <View style={styles.brandRow}>

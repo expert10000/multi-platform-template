@@ -38,7 +38,13 @@
   "devDependencies": {
     "@types/node": "^24.0.0",
     "concurrently": "^9.2.1",
-    "typescript": "^5.9.3"
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "typescript": "5.9.2"
+  },
+  "overrides": {
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
   },
   "engines": {
     "node": ">=24.0.0"

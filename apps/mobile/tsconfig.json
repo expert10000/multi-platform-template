@@ -1,11 +1,13 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "jsx": "react-jsx",
-    "moduleResolution": "Bundler",
-    "types": [
-      "react"
+    "customConditions": [
+      "react-native-strict-api"
     ],
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
     "noEmit": true
   },
   "include": [

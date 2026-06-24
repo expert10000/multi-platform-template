@@ -16,13 +16,10 @@
   },
   "dependencies": {
     "lucide-react": "^0.468.0",
-    "react": "^19.1.0"
+    "react": "19.1.0"
   },
   "devDependencies": {
-    "@types/react": "^19.1.0",
-    "typescript": "^5.9.3"
-  },
-  "peerDependencies": {
-    "react": "^19.0.0"
+    "@types/react": "19.1.10",
+    "typescript": "5.9.2"
   }
 }
