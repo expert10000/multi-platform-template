@@ -55,7 +55,7 @@ jobs:
       - name: Install Linux packaging tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y --no-install-recommends fakeroot file libarchive-tools rpm
+          sudo apt-get install -y --no-install-recommends ca-certificates dpkg fakeroot file g++ libarchive-tools make python3 rpm
 
       - name: Install dependencies
         run: npm ci

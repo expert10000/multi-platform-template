@@ -8,7 +8,7 @@ directories:
 
 extraMetadata:
   name: enterprise-analytics-workspace
-  version: 0.1.0
+  version: 0.1.1
   main: apps/desktop/dist/main.js
   description: Enterprise analytics workspace template with Electron, React, SQLite, CSV import, and worker services.
 
