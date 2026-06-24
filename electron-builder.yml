@@ -1,0 +1,49 @@
+appId: com.enterpriseanalytics.workspace
+productName: Enterprise Analytics Workspace
+copyright: Copyright (c) 2026 Enterprise Analytics
+electronVersion: 39.0.0
+
+directories:
+  output: release/desktop
+
+extraMetadata:
+  name: enterprise-analytics-workspace
+  version: 0.1.0
+  main: apps/desktop/dist/main.js
+  description: Enterprise analytics workspace template with Electron, React, SQLite, CSV import, and worker services.
+
+files:
+  - package.json
+  - apps/desktop/package.json
+  - apps/desktop/dist/**/*
+  - apps/web/dist/**/*
+  - packages/core/package.json
+  - packages/core/dist/**/*
+  - packages/workspace/package.json
+  - packages/workspace/dist/**/*
+  - node_modules/better-sqlite3/**/*
+  - node_modules/bindings/**/*
+  - node_modules/file-uri-to-path/**/*
+
+asarUnpack:
+  - node_modules/better-sqlite3/build/Release/*.node
+
+npmRebuild: false
+
+win:
+  icon: apps/desktop/assets/icon.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+  artifactName: ${productName} Setup ${version}.${ext}
+
+nsis:
+  installerIcon: apps/desktop/assets/icon.ico
+  uninstallerIcon: apps/desktop/assets/icon.ico
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: Enterprise Analytics Workspace

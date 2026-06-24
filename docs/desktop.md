@@ -27,3 +27,19 @@ npm run dev:desktop
 ```
 
 The desktop app stores the local SQLite file at Electron's `userData` path as `workspace.sqlite3`.
+
+Windows installer:
+
+```bash
+npm run package:desktop:win
+```
+
+The setup program is written to `release/desktop/Enterprise Analytics Workspace Setup 0.1.0.exe`.
+
+Desktop icon:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/generate-desktop-icon.ps1
+```
+
+The source mark lives at `apps/desktop/assets/icon.svg`; the Windows installer uses `apps/desktop/assets/icon.ico`.

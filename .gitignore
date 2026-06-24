@@ -6,6 +6,7 @@ coverage/
 .vite/
 .DS_Store
 reports/
+release/
 *.sqlite
 *.sqlite3
 *.db
