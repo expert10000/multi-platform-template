@@ -9,6 +9,7 @@ Responsibilities:
 - worker job overview
 - report list
 - shared domain model from `@enterprise-analytics/core`
+- future local or remote workspace server integration
 
 Development:
 
@@ -23,7 +24,7 @@ npm --workspace @enterprise-analytics/mobile run android
 npm --workspace @enterprise-analytics/mobile run ios
 ```
 
-The first version uses the shared demo dashboard snapshot. A later production version can connect to a backend API, offline sync layer, or secure mobile storage.
+The first version uses the shared demo dashboard snapshot. A production version can connect to the same OpenAPI contract served by `services/workspace-server`, a remote backend API, an offline sync layer, or secure mobile storage.
 
 ## .NET MAUI Alternative
 

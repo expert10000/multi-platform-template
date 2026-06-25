@@ -15,6 +15,9 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
 	public string DatasetCount { get; private set; } = "--";
 	public string JobCount { get; private set; } = "--";
 	public string ReportCount { get; private set; } = "--";
+	public string StatusText { get; private set; } = "Starting API";
+	public Color StatusBackgroundColor { get; private set; } = Color.FromArgb("#FFE2A8");
+	public Color StatusTextColor { get; private set; } = Color.FromArgb("#5C3A00");
 
 	public IReadOnlyList<MetricCard> Metrics
 	{
@@ -52,8 +55,8 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
 	{
 		try
 		{
-			var snapshot = await dashboardProvider.GetDashboardSnapshotAsync();
-			ApplySnapshot(snapshot);
+			var result = await dashboardProvider.GetDashboardSnapshotAsync();
+			ApplySnapshot(result);
 		}
 		catch (Exception ex)
 		{
@@ -64,13 +67,20 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
 		}
 	}
 
-	private void ApplySnapshot(DashboardSnapshot snapshot)
+	private void ApplySnapshot(DashboardSnapshotLoadResult result)
 	{
+		var snapshot = result.Snapshot;
+		StatusText = result.StatusText;
+		StatusBackgroundColor = result.StatusBackgroundColor;
+		StatusTextColor = result.StatusTextColor;
 		ProjectCount = snapshot.Counts.Projects.ToString(CultureInfo.InvariantCulture);
 		DatasetCount = snapshot.Counts.Datasets.ToString(CultureInfo.InvariantCulture);
 		JobCount = snapshot.Counts.Jobs.ToString(CultureInfo.InvariantCulture);
 		ReportCount = snapshot.Counts.Reports.ToString(CultureInfo.InvariantCulture);
 
+		OnPropertyChanged(nameof(StatusText));
+		OnPropertyChanged(nameof(StatusBackgroundColor));
+		OnPropertyChanged(nameof(StatusTextColor));
 		OnPropertyChanged(nameof(ProjectCount));
 		OnPropertyChanged(nameof(DatasetCount));
 		OnPropertyChanged(nameof(JobCount));

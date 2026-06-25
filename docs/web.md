@@ -10,6 +10,7 @@ Responsibilities:
 - job list
 - report list
 - project overview
+- local workspace server integration
 
 Development:
 
@@ -23,4 +24,9 @@ Build:
 npm run build:web
 ```
 
-The web app currently uses the shared demo snapshot from `packages/core`. When embedded in Electron, it can be wired to `window.analyticsWorkspace.getDashboardSnapshot()` to read live SQLite state through the preload bridge.
+The web app calls `http://127.0.0.1:8787/api/dashboard/snapshot` through `apps/web/src/workspaceApi.ts`. It falls back to the shared demo snapshot from `packages/core` when the local workspace server is offline.
+
+The top bar shows a colored data source badge:
+
+- Green `SQLite API started` for workspace-server / SQLite data.
+- Amber `Local fallback` for bundled demo data.

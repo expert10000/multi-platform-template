@@ -25,6 +25,19 @@
                     <Label Text="Native .NET MAUI shell for projects, datasets, jobs, and reports."
                            TextColor="#D7E4E7"
                            FontSize="15" />
+                    <Border BackgroundColor="{Binding StatusBackgroundColor}"
+                            StrokeThickness="0"
+                            Padding="10,6"
+                            HorizontalOptions="Start"
+                            Margin="0,6,0,0">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="8" />
+                        </Border.StrokeShape>
+                        <Label Text="{Binding StatusText}"
+                               TextColor="{Binding StatusTextColor}"
+                               FontAttributes="Bold"
+                               FontSize="13" />
+                    </Border>
                 </VerticalStackLayout>
             </Border>
 

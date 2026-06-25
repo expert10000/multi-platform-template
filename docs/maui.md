@@ -15,6 +15,9 @@ Responsibilities:
 - project, dataset, job, and report overview
 - KPI cards
 - C# DTOs aligned with the OpenAPI dashboard contract
+- HTTP client for `http://127.0.0.1:8787/api/dashboard/snapshot`
+- starts the local workspace server in development when it is not already running
+- status badge for SQLite API data versus local fallback data
 - future bridge to backend APIs, offline storage, or native file pickers
 
 Contract source:
@@ -22,7 +25,7 @@ Contract source:
 - `services/worker-api-contract/openapi.json`
 - `services/worker-api-contract/examples/dashboard-snapshot.json`
 
-The MAUI project bundles the dashboard snapshot as a raw asset and deserializes it into C# records under `apps/maui/Contracts`. This keeps MAUI independent from TypeScript internals while still displaying the same model shape as the web and desktop apps.
+The MAUI project starts or calls the local workspace server first. It also bundles the dashboard snapshot as a raw fallback asset and deserializes it into C# records under `apps/maui/Contracts`. This keeps MAUI independent from TypeScript internals while still displaying the same model shape as the web and desktop apps.
 
 Setup:
 

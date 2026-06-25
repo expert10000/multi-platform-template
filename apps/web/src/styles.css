@@ -123,6 +123,37 @@ input {
   gap: 20px;
 }
 
+.topbar__tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  min-width: min(560px, 100%);
+}
+
+.data-source-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  white-space: nowrap;
+  padding: 0 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.data-source-badge--sqlite {
+  color: #0f3f2c;
+  background: #c9f0d8;
+  border: 1px solid #83c99e;
+}
+
+.data-source-badge--local {
+  color: #5c3a00;
+  background: #ffe2a8;
+  border: 1px solid #e4b04f;
+}
+
 .eyebrow {
   color: #65736b;
   font-size: 0.78rem;
@@ -363,6 +394,13 @@ h2 {
   .topbar {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .topbar__tools {
+    align-items: stretch;
+    flex-direction: column;
+    min-width: 0;
+    width: 100%;
   }
 
   .count-grid,

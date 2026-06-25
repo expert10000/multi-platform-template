@@ -14,6 +14,7 @@ This keeps each platform free to use its natural language and UI stack:
 - `services/worker-api-contract/openapi.json` is the source contract for cross-runtime app data.
 - `services/worker-api-contract/src/index.ts` contains TypeScript worker request/result types.
 - `services/worker-api-contract/examples/dashboard-snapshot.json` is a small contract-shaped dashboard payload.
+- `services/workspace-server` serves the local OpenAPI-shaped API over HTTP.
 
 ## Current API Shape
 
@@ -28,7 +29,7 @@ The dashboard schema mirrors the main TypeScript domain model in `packages/core`
 
 The MAUI app does not import TypeScript code. Instead, it defines C# records in `apps/maui/Contracts` that match the OpenAPI dashboard schema.
 
-For the starter template, MAUI bundles `dashboard-snapshot.json` as a raw asset and loads it through `DashboardSnapshotProvider`. Later, the same records can be generated from OpenAPI or used by an HTTP client against a live API.
+For the starter template, MAUI calls `http://127.0.0.1:8787/api/dashboard/snapshot` and falls back to the bundled `dashboard-snapshot.json` raw asset when the local server is offline. Later, the same records can be generated from OpenAPI.
 
 ## Validation
 

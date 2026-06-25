@@ -11,8 +11,6 @@
     "start": "electron ."
   },
   "dependencies": {
-    "@enterprise-analytics/core": "0.1.0",
-    "@enterprise-analytics/workspace": "0.1.0",
     "electron": "^39.0.0"
   },
   "devDependencies": {

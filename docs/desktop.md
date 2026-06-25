@@ -5,19 +5,17 @@ The desktop app is an Electron shell in `apps/desktop`.
 Responsibilities:
 
 - create the native window
-- expose a safe preload bridge
-- own SQLite database access
-- seed demo workspace metadata
+- start the local workspace server when needed
 - load the React app from the web package in development
 
 Runtime path:
 
 ```text
 Electron main
-  -> workspace repository
-  -> SQLite database
-  -> preload bridge
+  -> workspace server
   -> React dashboard
+  -> HTTP localhost:8787
+  -> SQLite database
 ```
 
 Development:
@@ -26,7 +24,7 @@ Development:
 npm run dev:desktop
 ```
 
-The desktop app stores the local SQLite file at Electron's `userData` path as `workspace.sqlite3`.
+The desktop app starts `services/workspace-server` automatically when no server is already listening. In that mode, the SQLite file is stored at Electron's `userData` path as `workspace.sqlite3`.
 
 Windows installer:
 
@@ -44,7 +42,7 @@ npm run package:desktop:linux
 
 This writes `.AppImage`, `.deb`, and `.rpm` packages to `release/desktop`.
 
-Because the desktop app uses SQLite through a native Node module, build Linux packages on Linux or inside Docker so `better-sqlite3` is compiled for Linux:
+Because the workspace server uses SQLite through a native Node module, build Linux packages on Linux or inside Docker so `better-sqlite3` is compiled for Linux:
 
 ```bash
 npm run docker:desktop:linux:build

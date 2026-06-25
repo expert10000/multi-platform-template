@@ -7,11 +7,29 @@
   },
   "servers": [
     {
-      "url": "http://localhost:8080/api",
-      "description": "Local development API"
+      "url": "http://127.0.0.1:8787/api",
+      "description": "Local workspace server"
     }
   ],
   "paths": {
+    "/status": {
+      "get": {
+        "operationId": "getWorkspaceServerStatus",
+        "summary": "Get local workspace server status",
+        "responses": {
+          "200": {
+            "description": "Workspace server status and storage backend.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceServerStatus"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/dashboard/snapshot": {
       "get": {
         "operationId": "getDashboardSnapshot",
@@ -63,6 +81,23 @@
     "schemas": {
       "EntityId": {
         "type": "string"
+      },
+      "WorkspaceServerStatus": {
+        "type": "object",
+        "required": ["status", "storage", "databasePath"],
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["started"]
+          },
+          "storage": {
+            "type": "string",
+            "enum": ["sqlite"]
+          },
+          "databasePath": {
+            "type": "string"
+          }
+        }
       },
       "DatasetKind": {
         "type": "string",

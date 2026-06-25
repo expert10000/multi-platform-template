@@ -5,21 +5,26 @@ The template follows the same separation used by Math3D: platform shells at the 
 ```text
 apps/desktop
   -> Electron main process
-  -> SQLite repository layer
+  -> starts workspace server when needed
   -> React renderer
 
 apps/web
   -> React workspace UI
-  -> shared domain model
+  -> workspace server over HTTP
 
 apps/mobile
   -> Expo / React Native workspace UI
-  -> shared domain model
+  -> workspace server over HTTP
 
 apps/maui
   -> .NET MAUI native workspace shell
   -> Windows, Android, iOS, and Mac Catalyst targets
   -> C# DTOs that consume the OpenAPI dashboard contract
+
+services/workspace-server
+  -> local HTTP API
+  -> shared repository interface
+  -> SQLite database
 
 services/worker-python
   -> Pandas CSV analysis
@@ -39,6 +44,7 @@ services/worker-api-contract
 ```text
 CSV
   -> Asset Browser
+  -> Workspace Server
   -> SQLite metadata
   -> Worker Job
   -> Analysis
@@ -48,7 +54,7 @@ CSV
 
 ## SQLite Responsibilities
 
-SQLite is the application database. It stores state, not bulk business facts.
+SQLite is the default application database. It stores state, not bulk business facts. Platform apps access it through `services/workspace-server` rather than through Electron IPC or direct database imports.
 
 Tables:
 
@@ -89,7 +95,7 @@ The starter contract includes:
 - `POST /worker/jobs` for Python and Node worker requests.
 - schema definitions for projects, datasets, jobs, reports, KPIs, and worker assets.
 
-The MAUI app bundles `services/worker-api-contract/examples/dashboard-snapshot.json` as a local asset so the native shell can display real contract-shaped data before a live API is added.
+The workspace server exposes the contract at `http://127.0.0.1:8787/api`. The MAUI app calls that server first and falls back to the bundled dashboard snapshot only when the server is offline.
 
 ## Worker Split
 

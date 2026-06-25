@@ -2,6 +2,7 @@ import { BarChart3, BriefcaseBusiness, Database, FileText, Play, Search, Setting
 import { useEffect, useState } from "react";
 import { demoDashboardSnapshot, formatCurrency, formatPercent, type DashboardSnapshot } from "@enterprise-analytics/core";
 import { DataTable, MetricCard, StatusBadge } from "@enterprise-analytics/ui";
+import { getDashboardSnapshot, type DashboardDataSource } from "./workspaceApi";
 
 type WorkspaceView = "dashboard" | "datasets" | "jobs" | "reports";
 
@@ -27,10 +28,16 @@ function jobTone(status: string) {
 
 export function App() {
   const [dashboard, setDashboard] = useState<DashboardSnapshot>(demoDashboardSnapshot);
+  const [dataSource, setDataSource] = useState<DashboardDataSource>("local");
+  const [dataStatus, setDataStatus] = useState("Starting API");
   const [activeView, setActiveView] = useState<WorkspaceView>("dashboard");
 
   useEffect(() => {
-    void window.analyticsWorkspace?.getDashboardSnapshot().then(setDashboard);
+    void getDashboardSnapshot().then((result) => {
+      setDashboard(result.snapshot);
+      setDataSource(result.source);
+      setDataStatus(result.statusText);
+    });
   }, []);
 
   const selectView = (view: WorkspaceView) => {
@@ -168,10 +175,13 @@ export function App() {
             <span className="eyebrow">Option 1</span>
             <h1>{viewTitles[activeView]}</h1>
           </div>
-          <label className="search-box">
-            <Search aria-hidden="true" size={18} />
-            <input placeholder="Search projects, datasets, jobs" />
-          </label>
+          <div className="topbar__tools">
+            <span className={`data-source-badge data-source-badge--${dataSource}`}>{dataStatus}</span>
+            <label className="search-box">
+              <Search aria-hidden="true" size={18} />
+              <input placeholder="Search projects, datasets, jobs" />
+            </label>
+          </div>
         </header>
 
         {activeView === "dashboard" ? (
