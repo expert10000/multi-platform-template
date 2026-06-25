@@ -24,3 +24,16 @@ npm --workspace @enterprise-analytics/mobile run ios
 ```
 
 The first version uses the shared demo dashboard snapshot. A later production version can connect to a backend API, offline sync layer, or secure mobile storage.
+
+## .NET MAUI Alternative
+
+The repo also includes `apps/maui` for a native .NET MAUI shell.
+
+Use it when the target audience wants a C# and XAML cross-platform path for Windows, Android, iOS, and Mac Catalyst:
+
+```bash
+npm run restore:maui
+npm run dev:maui
+```
+
+The default npm build does not include MAUI because it requires .NET MAUI workloads on the developer machine or CI runner.

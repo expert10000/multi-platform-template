@@ -16,6 +16,11 @@ apps/mobile
   -> Expo / React Native workspace UI
   -> shared domain model
 
+apps/maui
+  -> .NET MAUI native workspace shell
+  -> Windows, Android, iOS, and Mac Catalyst targets
+  -> C# DTOs that consume the OpenAPI dashboard contract
+
 services/worker-python
   -> Pandas CSV analysis
   -> JSON / HTML / PDF-ready output
@@ -25,7 +30,8 @@ services/worker-node
   -> transformations, notifications, email drafts
 
 services/worker-api-contract
-  -> shared request/result envelope
+  -> OpenAPI schema for dashboard and worker contracts
+  -> TypeScript request/result envelope
 ```
 
 ## Data Flow
@@ -72,6 +78,18 @@ Examples:
 - Superstore: `Order Date,Region,Sales`
 
 Workers read CSV and Excel files, compute analysis or workflow results, and write report artifacts.
+
+## Contract Boundary
+
+OpenAPI is the cross-runtime boundary for app data. TypeScript packages keep the primary domain model, while C# clients such as MAUI consume matching DTOs generated from or aligned with `services/worker-api-contract/openapi.json`.
+
+The starter contract includes:
+
+- `GET /dashboard/snapshot` for the shared dashboard model.
+- `POST /worker/jobs` for Python and Node worker requests.
+- schema definitions for projects, datasets, jobs, reports, KPIs, and worker assets.
+
+The MAUI app bundles `services/worker-api-contract/examples/dashboard-snapshot.json` as a local asset so the native shell can display real contract-shaped data before a live API is added.
 
 ## Worker Split
 

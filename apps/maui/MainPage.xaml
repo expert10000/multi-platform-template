@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="EnterpriseAnalytics.Maui.MainPage"
+             BackgroundColor="#F4F6F8">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24" Spacing="18">
+            <Border BackgroundColor="#10232B"
+                    StrokeThickness="0"
+                    Padding="22">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="8" />
+                </Border.StrokeShape>
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Enterprise Analytics"
+                           TextColor="#BDE6D7"
+                           FontAttributes="Bold"
+                           FontSize="14" />
+                    <Label Text="Workspace"
+                           TextColor="White"
+                           FontAttributes="Bold"
+                           FontSize="32"
+                           SemanticProperties.HeadingLevel="Level1" />
+                    <Label Text="Native .NET MAUI shell for projects, datasets, jobs, and reports."
+                           TextColor="#D7E4E7"
+                           FontSize="15" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Grid ColumnDefinitions="*,*"
+                  RowDefinitions="Auto,Auto"
+                  ColumnSpacing="12"
+                  RowSpacing="12">
+                <Border Padding="16" BackgroundColor="White" Stroke="#DCE3E8" Grid.Row="0" Grid.Column="0">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="8" />
+                    </Border.StrokeShape>
+                    <VerticalStackLayout>
+                        <Label Text="Projects" TextColor="#60707A" FontSize="13" />
+                        <Label Text="{Binding ProjectCount}" TextColor="#10232B" FontAttributes="Bold" FontSize="28" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Padding="16" BackgroundColor="White" Stroke="#DCE3E8" Grid.Row="0" Grid.Column="1">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="8" />
+                    </Border.StrokeShape>
+                    <VerticalStackLayout>
+                        <Label Text="Datasets" TextColor="#60707A" FontSize="13" />
+                        <Label Text="{Binding DatasetCount}" TextColor="#10232B" FontAttributes="Bold" FontSize="28" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Padding="16" BackgroundColor="White" Stroke="#DCE3E8" Grid.Row="1" Grid.Column="0">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="8" />
+                    </Border.StrokeShape>
+                    <VerticalStackLayout>
+                        <Label Text="Jobs" TextColor="#60707A" FontSize="13" />
+                        <Label Text="{Binding JobCount}" TextColor="#10232B" FontAttributes="Bold" FontSize="28" />
+                    </VerticalStackLayout>
+                </Border>
+                <Border Padding="16" BackgroundColor="White" Stroke="#DCE3E8" Grid.Row="1" Grid.Column="1">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="8" />
+                    </Border.StrokeShape>
+                    <VerticalStackLayout>
+                        <Label Text="Reports" TextColor="#60707A" FontSize="13" />
+                        <Label Text="{Binding ReportCount}" TextColor="#10232B" FontAttributes="Bold" FontSize="28" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <Label Text="Business KPIs"
+                   TextColor="#10232B"
+                   FontAttributes="Bold"
+                   FontSize="20"
+                   Margin="0,8,0,0" />
+
+            <CollectionView ItemsSource="{Binding Metrics}" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Padding="16"
+                                Margin="0,0,0,10"
+                                BackgroundColor="White"
+                                Stroke="#DCE3E8">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="8" />
+                            </Border.StrokeShape>
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding Label}" TextColor="#60707A" FontSize="13" />
+                                    <Label Text="{Binding Value}" TextColor="#10232B" FontAttributes="Bold" FontSize="24" />
+                                </VerticalStackLayout>
+                                <Label Text="{Binding Delta}" Grid.Column="1" TextColor="#1E7E64" FontAttributes="Bold" VerticalOptions="Center" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Label Text="Workspace Activity"
+                   TextColor="#10232B"
+                   FontAttributes="Bold"
+                   FontSize="20" />
+
+            <CollectionView ItemsSource="{Binding Activity}" SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border Padding="16"
+                                Margin="0,0,0,10"
+                                BackgroundColor="White"
+                                Stroke="#DCE3E8">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="8" />
+                            </Border.StrokeShape>
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="{Binding Title}" TextColor="#10232B" FontAttributes="Bold" FontSize="16" />
+                                <Label Text="{Binding Detail}" TextColor="#60707A" FontSize="13" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

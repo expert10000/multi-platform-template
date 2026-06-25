@@ -1,0 +1,102 @@
+{
+  "counts": {
+    "projects": 5,
+    "datasets": 26,
+    "jobs": 13,
+    "reports": 8
+  },
+  "kpis": {
+    "revenue": 261000,
+    "cost": 171000,
+    "profit": 90000,
+    "margin": 0.345,
+    "growth": 0.167
+  },
+  "recentProjects": [
+    {
+      "id": "project-sales-forecast-2026",
+      "name": "Sales Forecast 2026",
+      "description": "Monthly sales and profitability forecast.",
+      "ownerId": "user-alex",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "project-inventory-risk",
+      "name": "Inventory Risk",
+      "description": "Reorder exceptions and stock-out risk.",
+      "ownerId": "user-morgan",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "project-real-retail-benchmarks",
+      "name": "Retail Benchmark Imports",
+      "description": "Real Online Retail and Superstore datasets for analysis demos.",
+      "ownerId": "user-alex",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "updatedAt": "2026-06-23T00:00:00.000Z"
+    }
+  ],
+  "recentDatasets": [
+    {
+      "id": "dataset-online-retail-real",
+      "projectId": "project-real-retail-benchmarks",
+      "name": "Online Retail.xlsx",
+      "kind": "sales",
+      "sourcePath": "sample-data/real/online-retail/Online Retail.xlsx",
+      "rowCount": 541909,
+      "importedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "dataset-superstore-real",
+      "projectId": "project-real-retail-benchmarks",
+      "name": "superstore_train.csv",
+      "kind": "sales",
+      "sourcePath": "sample-data/real/superstore-sales/train.csv",
+      "rowCount": 9800,
+      "importedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "dataset-sales-q1",
+      "projectId": "project-sales-forecast-2026",
+      "name": "sales_q1.csv",
+      "kind": "sales",
+      "sourcePath": "sample-data/online-retail.csv",
+      "rowCount": 8,
+      "importedAt": "2026-06-23T00:00:00.000Z"
+    }
+  ],
+  "recentJobs": [
+    {
+      "id": "job-kpi-analysis",
+      "projectId": "project-sales-forecast-2026",
+      "datasetId": "dataset-sales-q1",
+      "kind": "kpi-analysis",
+      "status": "succeeded",
+      "requestedBy": "user-alex",
+      "createdAt": "2026-06-23T00:00:00.000Z",
+      "completedAt": "2026-06-23T00:00:00.000Z"
+    },
+    {
+      "id": "job-trend-analysis",
+      "projectId": "project-sales-forecast-2026",
+      "datasetId": "dataset-sales-q1",
+      "kind": "trend-analysis",
+      "status": "running",
+      "requestedBy": "user-alex",
+      "createdAt": "2026-06-23T00:00:00.000Z"
+    }
+  ],
+  "recentReports": [
+    {
+      "id": "report-sales-april",
+      "projectId": "project-sales-forecast-2026",
+      "jobId": "job-kpi-analysis",
+      "title": "sales_report_april.pdf",
+      "format": "pdf",
+      "outputPath": "reports/sales_report_april.pdf",
+      "createdAt": "2026-06-23T00:00:00.000Z"
+    }
+  ]
+}

@@ -1,0 +1,256 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Enterprise Analytics Workspace API",
+    "version": "0.1.0",
+    "description": "Shared contract for platform shells, worker services, and native clients."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/api",
+      "description": "Local development API"
+    }
+  ],
+  "paths": {
+    "/dashboard/snapshot": {
+      "get": {
+        "operationId": "getDashboardSnapshot",
+        "summary": "Get the workspace dashboard snapshot",
+        "responses": {
+          "200": {
+            "description": "Dashboard model used by web, desktop, mobile, and MAUI shells.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardSnapshot"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/worker/jobs": {
+      "post": {
+        "operationId": "runWorkerJob",
+        "summary": "Run a worker job",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkerJobRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Completed worker result.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkerJobResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "EntityId": {
+        "type": "string"
+      },
+      "DatasetKind": {
+        "type": "string",
+        "enum": ["sales", "inventory", "production", "unknown"]
+      },
+      "JobKind": {
+        "type": "string",
+        "enum": ["kpi-analysis", "trend-analysis", "report-generation"]
+      },
+      "JobStatus": {
+        "type": "string",
+        "enum": ["queued", "running", "succeeded", "failed"]
+      },
+      "Project": {
+        "type": "object",
+        "required": ["id", "name", "description", "ownerId", "createdAt", "updatedAt"],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/EntityId" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "ownerId": { "$ref": "#/components/schemas/EntityId" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Dataset": {
+        "type": "object",
+        "required": ["id", "projectId", "name", "kind", "sourcePath", "rowCount", "importedAt"],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/EntityId" },
+          "projectId": { "$ref": "#/components/schemas/EntityId" },
+          "name": { "type": "string" },
+          "kind": { "$ref": "#/components/schemas/DatasetKind" },
+          "sourcePath": { "type": "string" },
+          "rowCount": { "type": "integer", "minimum": 0 },
+          "importedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Job": {
+        "type": "object",
+        "required": ["id", "projectId", "datasetId", "kind", "status", "requestedBy", "createdAt"],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/EntityId" },
+          "projectId": { "$ref": "#/components/schemas/EntityId" },
+          "datasetId": { "$ref": "#/components/schemas/EntityId" },
+          "kind": { "$ref": "#/components/schemas/JobKind" },
+          "status": { "$ref": "#/components/schemas/JobStatus" },
+          "requestedBy": { "$ref": "#/components/schemas/EntityId" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "completedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Report": {
+        "type": "object",
+        "required": ["id", "projectId", "jobId", "title", "format", "outputPath", "createdAt"],
+        "properties": {
+          "id": { "$ref": "#/components/schemas/EntityId" },
+          "projectId": { "$ref": "#/components/schemas/EntityId" },
+          "jobId": { "$ref": "#/components/schemas/EntityId" },
+          "title": { "type": "string" },
+          "format": {
+            "type": "string",
+            "enum": ["html", "pdf", "json"]
+          },
+          "outputPath": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "DashboardCounts": {
+        "type": "object",
+        "required": ["projects", "datasets", "jobs", "reports"],
+        "properties": {
+          "projects": { "type": "integer", "minimum": 0 },
+          "datasets": { "type": "integer", "minimum": 0 },
+          "jobs": { "type": "integer", "minimum": 0 },
+          "reports": { "type": "integer", "minimum": 0 }
+        }
+      },
+      "KpiSummary": {
+        "type": "object",
+        "required": ["revenue", "cost", "profit", "margin", "growth"],
+        "properties": {
+          "revenue": { "type": "number" },
+          "cost": { "type": "number" },
+          "profit": { "type": "number" },
+          "margin": { "type": "number" },
+          "growth": { "type": "number" }
+        }
+      },
+      "DashboardSnapshot": {
+        "type": "object",
+        "required": ["counts", "kpis", "recentProjects", "recentDatasets", "recentJobs", "recentReports"],
+        "properties": {
+          "counts": { "$ref": "#/components/schemas/DashboardCounts" },
+          "kpis": { "$ref": "#/components/schemas/KpiSummary" },
+          "recentProjects": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Project" }
+          },
+          "recentDatasets": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Dataset" }
+          },
+          "recentJobs": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Job" }
+          },
+          "recentReports": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Report" }
+          }
+        }
+      },
+      "WorkerRuntime": {
+        "type": "string",
+        "enum": ["python", "node"]
+      },
+      "WorkerJobKind": {
+        "type": "string",
+        "enum": [
+          "sales.kpi",
+          "sales.forecast",
+          "csv.process",
+          "report.pdf",
+          "csv.import",
+          "data.validate",
+          "data.transform",
+          "notification.create",
+          "email.generate"
+        ]
+      },
+      "WorkerAssetRef": {
+        "type": "object",
+        "required": ["path"],
+        "properties": {
+          "path": { "type": "string" },
+          "mediaType": {
+            "type": "string",
+            "enum": [
+              "text/csv",
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+              "application/json",
+              "text/html",
+              "application/pdf"
+            ]
+          }
+        }
+      },
+      "WorkerJobRequest": {
+        "type": "object",
+        "required": ["id", "kind", "runtime", "requestedAt"],
+        "properties": {
+          "id": { "type": "string" },
+          "kind": { "$ref": "#/components/schemas/WorkerJobKind" },
+          "runtime": { "$ref": "#/components/schemas/WorkerRuntime" },
+          "input": { "$ref": "#/components/schemas/WorkerAssetRef" },
+          "output": { "$ref": "#/components/schemas/WorkerAssetRef" },
+          "params": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "requestedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "WorkerJobResult": {
+        "type": "object",
+        "required": ["id", "kind", "runtime", "status", "completedAt"],
+        "properties": {
+          "id": { "type": "string" },
+          "kind": { "$ref": "#/components/schemas/WorkerJobKind" },
+          "runtime": { "$ref": "#/components/schemas/WorkerRuntime" },
+          "status": {
+            "type": "string",
+            "enum": ["succeeded", "failed"]
+          },
+          "output": { "$ref": "#/components/schemas/WorkerAssetRef" },
+          "payload": true,
+          "error": {
+            "type": "object",
+            "required": ["code", "message"],
+            "properties": {
+              "code": { "type": "string" },
+              "message": { "type": "string" }
+            }
+          },
+          "completedAt": { "type": "string", "format": "date-time" }
+        }
+      }
+    }
+  }
+}
