@@ -1,6 +1,6 @@
 # Mobile App
 
-Expo/React Native mobile shell for the Enterprise Analytics Workspace.
+Expo/React Native mobile shell for the Enterprise Platform.
 
 It mirrors the same information architecture as desktop and web:
 

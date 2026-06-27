@@ -57,7 +57,7 @@ function writeMessagePage(response: ServerResponse, title: string, message: stri
   <main>
     <h1>${escapeHtml(title)}</h1>
     <p>${escapeHtml(message)}</p>
-    <a href="/">Back to Workspace Server</a>
+    <a href="/">Back to Workspace Monitor</a>
   </main>
 </body>
 </html>`);
@@ -152,7 +152,7 @@ function writeStatusPage(response: ServerResponse) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Enterprise Server</title>
+  <title>Workspace Monitor</title>
   <style>
     :root { color: #17202a; background: #f4f6f3; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
@@ -184,10 +184,10 @@ function writeStatusPage(response: ServerResponse) {
 <body>
   <main>
     <div class="status-header">
-      <h1>Enterprise Server</h1>
-      <span class="badge">SQLite API ${escapeHtml(status.status)}</span>
+      <h1>Workspace Monitor</h1>
+      <span class="badge">Workspace Server ${escapeHtml(status.status)}</span>
     </div>
-    <p>Workspace Monitor for SQLite, OpenAPI, workers, and platform launch targets.</p>
+    <p>Admin UI for the shared Workspace Server, SQLite, OpenAPI, workers, and platform launch targets.</p>
     <div class="path">${escapeHtml(status.databasePath)}</div>
     <dl>
       ${metrics.map(([label, value]) => `<div class="metric"><dt>${escapeHtml(label)}</dt><dd>${value}</dd></div>`).join("")}
@@ -207,9 +207,9 @@ function writeStatusPage(response: ServerResponse) {
       <a href="/openapi.json">OpenAPI JSON</a>
     </nav>
     <nav class="links launch-links" aria-label="Launch apps">
-      <a href="http://127.0.0.1:5174/">Open Web</a>
-      <a href="/launch/web">Start Web App</a>
-      <a href="/launch/desktop">Open Electron</a>
+      <a href="http://127.0.0.1:5174/">Open Enterprise Platform Web</a>
+      <a href="/launch/web">Start Enterprise Platform Web</a>
+      <a href="/launch/desktop">Open Enterprise Platform</a>
       <a href="/launch/maui">Open MAUI</a>
       <a class="future" href="/launch/mobile">Open React Native (future)</a>
     </nav>
@@ -228,7 +228,7 @@ function writeSwaggerPage(response: ServerResponse) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Swagger - Enterprise Server</title>
+  <title>Swagger - Workspace Server</title>
   <style>
     :root { color: #17202a; background: #f4f6f3; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
@@ -241,8 +241,8 @@ function writeSwaggerPage(response: ServerResponse) {
 </head>
 <body>
   <main>
-    <h1>Swagger</h1>
-    <p>Local OpenAPI contract for the Enterprise Server.</p>
+    <h1>Workspace Server Swagger</h1>
+    <p>Local OpenAPI contract for the Workspace Server.</p>
     <p><a href="/openapi.json">Open raw OpenAPI JSON</a> · <a href="/">Back to monitor</a></p>
     <h2>Paths</h2>
     <ul>
@@ -261,7 +261,7 @@ function writeApiDocsPage(response: ServerResponse) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>API Docs - Enterprise Server</title>
+  <title>API Docs - Workspace Server</title>
   <style>
     :root { color: #17202a; background: #f4f6f3; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
@@ -276,7 +276,7 @@ function writeApiDocsPage(response: ServerResponse) {
 <body>
   <main>
     <h1>API Docs</h1>
-    <p>Developer endpoints exposed by the local Enterprise Server.</p>
+    <p>Developer endpoints exposed by the local Workspace Server.</p>
     <p><a href="/">Back to monitor</a> · <a href="/openapi.json">OpenAPI JSON</a></p>
     <table>
       <thead><tr><th>Method</th><th>Path</th><th>Purpose</th></tr></thead>
@@ -311,7 +311,7 @@ function writeDatabasePage(response: ServerResponse) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Database Browser - Enterprise Server</title>
+  <title>Database Browser - Workspace Server</title>
   <style>
     :root { color: #17202a; background: #f4f6f3; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     body { margin: 0; min-height: 100vh; padding: 24px; }
@@ -425,7 +425,7 @@ function launchTarget(target: "web" | "desktop" | "maui" | "mobile") {
   if (target === "web") {
     launchWebDevServer();
     openUrl("http://127.0.0.1:5174/");
-    return "Web app launch requested and browser open requested.";
+    return "Enterprise Platform Web launch requested and browser open requested.";
   }
 
   if (target === "desktop") {
@@ -438,7 +438,7 @@ function launchTarget(target: "web" | "desktop" | "maui" | "mobile") {
     } else {
       runDetached(process.platform === "win32" ? "npm.cmd" : "npm", ["--workspace", "@enterprise-analytics/desktop", "run", "electron:dev"]);
     }
-    return "Electron desktop launch requested.";
+    return "Enterprise Platform desktop launch requested.";
   }
 
   if (target === "mobile") {
@@ -520,12 +520,12 @@ const server = createServer((request, response) => {
   }
 
   if (route.method === "GET" && route.pathname === "/launch/web") {
-    writeMessagePage(response, "Starting Web App", launchTarget("web"));
+    writeMessagePage(response, "Starting Enterprise Platform Web", launchTarget("web"));
     return;
   }
 
   if (route.method === "GET" && route.pathname === "/launch/desktop") {
-    writeMessagePage(response, "Starting Electron Desktop", launchTarget("desktop"));
+    writeMessagePage(response, "Starting Enterprise Platform", launchTarget("desktop"));
     return;
   }
 

@@ -13,11 +13,7 @@
                     <RoundRectangle CornerRadius="8" />
                 </Border.StrokeShape>
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Enterprise Analytics"
-                           TextColor="#BDE6D7"
-                           FontAttributes="Bold"
-                           FontSize="14" />
-                    <Label Text="Workspace"
+                    <Label Text="Enterprise Platform"
                            TextColor="White"
                            FontAttributes="Bold"
                            FontSize="32"

@@ -28,7 +28,7 @@
 		<MauiXamlInflator>SourceGen</MauiXamlInflator>
 
 		<!-- Display name -->
-		<ApplicationTitle>Enterprise Analytics Workspace</ApplicationTitle>
+		<ApplicationTitle>Enterprise Platform</ApplicationTitle>
 
 		<!-- App Identifier -->
 		<ApplicationId>com.enterpriseanalytics.workspace.maui</ApplicationId>

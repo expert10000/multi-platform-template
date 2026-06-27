@@ -57,6 +57,12 @@ async function waitForUrl(url: string) {
   return false;
 }
 
+function withDesktopHost(url: string) {
+  const desktopUrl = new URL(url);
+  desktopUrl.searchParams.set("host", "desktop");
+  return desktopUrl.toString();
+}
+
 async function ensureWorkspaceServer() {
   if (await isWorkspaceServerAvailable()) {
     return;
@@ -92,7 +98,7 @@ async function createMainWindow() {
     height: 900,
     minWidth: 980,
     minHeight: 680,
-    title: "Enterprise Analytics Workspace",
+    title: "Enterprise Platform",
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false
@@ -102,13 +108,13 @@ async function createMainWindow() {
   const devUrl = process.env.ANALYTICS_WEB_URL;
   if (devUrl) {
     await waitForUrl(devUrl);
-    await mainWindow.loadURL(devUrl);
+    await mainWindow.loadURL(withDesktopHost(devUrl));
   } else {
     const webIndexPath = join(__dirname, "../../web/dist/index.html");
     if (existsSync(webIndexPath)) {
-      await mainWindow.loadFile(webIndexPath);
+      await mainWindow.loadFile(webIndexPath, { query: { host: "desktop" } });
     } else {
-      await mainWindow.loadURL("http://127.0.0.1:5174");
+      await mainWindow.loadURL("http://127.0.0.1:5174/?host=desktop");
     }
   }
 }

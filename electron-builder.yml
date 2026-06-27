@@ -1,6 +1,6 @@
 appId: com.enterpriseanalytics.workspace
-productName: Enterprise Analytics Workspace
-copyright: Copyright (c) 2026 Enterprise Analytics
+productName: Enterprise Platform
+copyright: Copyright (c) 2026 Enterprise Platform
 electronVersion: 39.0.0
 
 directories:
@@ -10,7 +10,7 @@ extraMetadata:
   name: enterprise-analytics-workspace
   version: 0.1.1
   main: apps/desktop/dist/main.js
-  description: Enterprise analytics workspace template with Electron, React, SQLite, CSV import, and worker services.
+  description: Enterprise Platform desktop application with Workspace Server and Python Worker integration.
 
 files:
   - package.json
@@ -43,9 +43,9 @@ linux:
   category: Office
   executableName: enterprise-analytics-workspace
   syncDesktopName: true
-  maintainer: Enterprise Analytics
-  synopsis: Enterprise analytics workspace
-  description: Enterprise analytics workspace template with Electron, React, SQLite, CSV import, and worker services.
+  maintainer: Enterprise Platform
+  synopsis: Enterprise Platform
+  description: Enterprise Platform desktop application with Workspace Server and Python Worker integration.
   target:
     - target: AppImage
       arch:
@@ -66,4 +66,4 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
   createStartMenuShortcut: true
-  shortcutName: Enterprise Analytics Workspace
+  shortcutName: Enterprise Platform

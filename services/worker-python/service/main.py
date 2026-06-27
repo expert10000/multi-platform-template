@@ -207,7 +207,7 @@ def write_output(output_path: Path, payload: dict[str, Any] | str) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Enterprise analytics CSV worker")
+    parser = argparse.ArgumentParser(description="Python Worker for Enterprise Platform CSV jobs")
     parser.add_argument("--job", choices=["kpi", "trend", "report"], required=True)
     parser.add_argument("--input", required=True)
     parser.add_argument("--output", required=True)

@@ -1,8 +1,8 @@
 # Docker
 
-The Docker setup demonstrates both the static web app and worker runtimes.
+The Docker setup demonstrates both Enterprise Platform Web and worker runtimes.
 
-## Web App
+## Enterprise Platform Web
 
 Build the web image:
 
@@ -24,13 +24,13 @@ http://127.0.0.1:8080
 
 ## Compose
 
-Run the web app and worker demo with Compose:
+Run Enterprise Platform Web and the worker demo with Compose:
 
 ```bash
 npm run docker:compose
 ```
 
-The web app is exposed at:
+Enterprise Platform Web is exposed at:
 
 ```text
 http://127.0.0.1:8080

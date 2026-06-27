@@ -7,11 +7,19 @@ import { getDashboardSnapshot, type DashboardDataSource } from "./workspaceApi";
 type WorkspaceView = "dashboard" | "datasets" | "jobs" | "reports";
 
 const viewTitles: Record<WorkspaceView, string> = {
-  dashboard: "Enterprise Analytics Workspace",
+  dashboard: "Enterprise Platform Web",
   datasets: "Datasets",
-  jobs: "Worker Jobs",
+  jobs: "Python Worker",
   reports: "Reports"
 };
+
+function getPlatformName() {
+  if (new URLSearchParams(window.location.search).get("host") === "desktop") {
+    return "Enterprise Platform";
+  }
+
+  return "Enterprise Platform Web";
+}
 
 function jobTone(status: string) {
   if (status === "succeeded") {
@@ -31,6 +39,7 @@ export function App() {
   const [dataSource, setDataSource] = useState<DashboardDataSource>("local");
   const [dataStatus, setDataStatus] = useState("Starting API");
   const [activeView, setActiveView] = useState<WorkspaceView>("dashboard");
+  const [platformName] = useState(getPlatformName);
 
   useEffect(() => {
     void getDashboardSnapshot().then((result) => {
@@ -42,7 +51,7 @@ export function App() {
 
   const selectView = (view: WorkspaceView) => {
     setActiveView(view);
-    window.history.replaceState(null, "", window.location.pathname);
+    window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -74,8 +83,8 @@ export function App() {
     <article className={`panel ${wide ? "panel--wide" : ""}`}>
       <div className="panel__header">
         <div>
-          <h2>Worker Jobs</h2>
-          <span>Pandas-backed analysis pipeline</span>
+          <h2>Python Worker</h2>
+          <span>Background processing for analytics jobs</span>
         </div>
         <button className="command-button" type="button">
           <Play aria-hidden="true" size={18} />
@@ -140,10 +149,10 @@ export function App() {
     <main className="workspace-shell">
       <aside className="sidebar">
         <div className="brand-lockup">
-          <div className="brand-mark">EA</div>
+          <div className="brand-mark">EP</div>
           <div>
-            <strong>Enterprise Analytics</strong>
-            <span>Workspace</span>
+            <strong>{platformName}</strong>
+            <span>{platformName === "Enterprise Platform" ? "Desktop" : "Browser"}</span>
           </div>
         </div>
         <nav className="primary-nav" aria-label="Primary navigation">
@@ -172,8 +181,7 @@ export function App() {
       <section className="workspace-main">
         <header className="topbar">
           <div>
-            <span className="eyebrow">Option 1</span>
-            <h1>{viewTitles[activeView]}</h1>
+            <h1>{activeView === "dashboard" ? platformName : viewTitles[activeView]}</h1>
           </div>
           <div className="topbar__tools">
             <span className={`data-source-badge data-source-badge--${dataSource}`}>{dataStatus}</span>

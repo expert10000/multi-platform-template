@@ -6,7 +6,7 @@ analysis-workspace-template/
 |   |-- desktop/          # Electron shell
 |   |-- mobile/           # Expo / React Native app
 |   |-- maui/             # .NET MAUI native app
-|   `-- web/              # React web app
+|   `-- web/              # Enterprise Platform Web
 |-- packages/
 |   |-- core/             # shared domain model
 |   |-- ui/               # shared UI

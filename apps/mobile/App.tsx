@@ -7,9 +7,9 @@ import { demoDashboardSnapshot, formatCurrency, formatPercent, type DashboardSna
 type MobileView = "dashboard" | "datasets" | "jobs" | "reports";
 
 const viewTitles: Record<MobileView, string> = {
-  dashboard: "Workspace",
+  dashboard: "Enterprise Platform",
   datasets: "Datasets",
-  jobs: "Worker Jobs",
+  jobs: "Python Worker",
   reports: "Reports"
 };
 
@@ -30,10 +30,9 @@ export default function App() {
         <View style={styles.topbar}>
           <View style={styles.brandRow}>
             <View style={styles.brandMark}>
-              <Text style={styles.brandMarkText}>EA</Text>
+              <Text style={styles.brandMarkText}>EP</Text>
             </View>
             <View>
-              <Text style={styles.eyebrow}>Option 1</Text>
               <Text style={styles.title}>{viewTitles[activeView]}</Text>
             </View>
           </View>
@@ -111,7 +110,7 @@ function DatasetsView({ dashboard, compact = false }: { dashboard: DashboardSnap
 
 function JobsView({ dashboard, compact = false }: { dashboard: DashboardSnapshot; compact?: boolean }) {
   return (
-    <Panel title="Worker Jobs" detail="Python analytics and Node workflow jobs">
+    <Panel title="Python Worker" detail="Background processing for analytics jobs">
       {dashboard.recentJobs.map((job) => (
         <ListRow key={job.id} title={job.kind} meta={job.status} detail={job.datasetId.replace("dataset-", "")} />
       ))}

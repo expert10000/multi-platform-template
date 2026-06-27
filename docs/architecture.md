@@ -125,7 +125,7 @@ Node is added for JavaScript-native workflow jobs:
 
 This gives JavaScript developers a familiar worker path while keeping serious analytics in Python.
 
-## Worker Jobs
+## Python Worker
 
 KPI Analysis:
 

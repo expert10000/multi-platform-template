@@ -1,6 +1,6 @@
 # .NET MAUI
 
-The MAUI app lives in `apps/maui` and provides an optional native shell for the same Enterprise Analytics Workspace domain.
+The MAUI app lives in `apps/maui` and provides an optional native shell for the same Enterprise Platform domain.
 
 Supported targets from the project file:
 

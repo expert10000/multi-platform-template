@@ -32,7 +32,7 @@ Windows installer:
 npm run package:desktop:win
 ```
 
-The setup program is written to `release/desktop/Enterprise Analytics Workspace Setup 0.1.0.exe`.
+The setup program is written to `release/desktop/Enterprise Platform Setup 0.1.0.exe`.
 
 Linux packages:
 

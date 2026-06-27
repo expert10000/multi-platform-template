@@ -3,10 +3,10 @@
   "private": true,
   "version": "0.1.1",
   "license": "Apache-2.0",
-  "author": "Enterprise Analytics",
+  "author": "Enterprise Platform",
   "homepage": "https://github.com/expert10000/multi-platform-template",
-  "desktopName": "enterprise-analytics-workspace",
-  "description": "Enterprise analytics workspace template with Electron, React, SQLite, CSV import, and a Python analysis worker.",
+  "desktopName": "enterprise-platform",
+  "description": "Enterprise Platform template with desktop, web, mobile, Workspace Server, and Python Worker hosts.",
   "workspaces": [
     "apps/*",
     "packages/*",

@@ -1,11 +1,11 @@
-# Enterprise Analytics Workspace Template
+# Enterprise Platform Template
 
 This repository is a template for building desktop, web, mobile, service, and worker applications from a shared platform core. Instead of duplicating business logic for each application, the architecture shares the domain model, repository abstractions, service layer, OpenAPI contracts, worker protocols, and deployment strategy across every host.
 
 It keeps the same practical boundaries:
 
 - `apps/desktop` - Electron shell that loads the web UI and starts the local workspace server.
-- `apps/web` - React web app for the analytics dashboard and workspace UI.
+- `apps/web` - Enterprise Platform Web, a React browser host for the analytics dashboard and workspace UI.
 - `apps/mobile` - Expo/React Native mobile shell.
 - `apps/maui` - optional .NET MAUI native shell for Windows, Android, iOS, and Mac Catalyst.
 - `packages/core` - shared domain model and analytics contracts.
@@ -59,7 +59,7 @@ Install dependencies:
 npm install
 ```
 
-Start the web app:
+Start Enterprise Platform Web:
 
 ```bash
 npm run dev:web
@@ -119,7 +119,7 @@ npm run check:openapi
 
 The shared contract is documented in `docs/shared-contract.md`. The workspace server is documented in `docs/workspace-server.md`. The .NET MAUI native shell is documented in `docs/maui.md`.
 
-Run the web app in Docker:
+Run Enterprise Platform Web in Docker:
 
 ```bash
 npm run docker:web:build

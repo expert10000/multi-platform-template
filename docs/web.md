@@ -1,6 +1,6 @@
 # Web
 
-The web app lives in `apps/web` and uses Vite + React.
+Enterprise Platform Web lives in `apps/web` and uses Vite + React.
 
 Responsibilities:
 
@@ -24,7 +24,7 @@ Build:
 npm run build:web
 ```
 
-The web app calls `http://127.0.0.1:8787/api/dashboard/snapshot` through `apps/web/src/workspaceApi.ts`. It falls back to the shared demo snapshot from `packages/core` when the local workspace server is offline.
+Enterprise Platform Web calls `http://127.0.0.1:8787/api/dashboard/snapshot` through `apps/web/src/workspaceApi.ts`. It falls back to the shared demo snapshot from `packages/core` when the local Workspace Server is offline.
 
 The top bar shows a colored data source badge:
 

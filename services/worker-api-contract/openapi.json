@@ -1,7 +1,7 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Enterprise Analytics Workspace API",
+    "title": "Workspace Server API",
     "version": "0.1.0",
     "description": "Shared contract for platform shells, worker services, and native clients."
   },

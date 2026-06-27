@@ -1,1 +1,1 @@
-"""Enterprise analytics worker service."""
+"""Python Worker service for Enterprise Platform jobs."""
