@@ -1,6 +1,6 @@
 # Enterprise Analytics Workspace Template
 
-This template mirrors the Math3D style of architecture, but changes the domain to an enterprise analytics workspace.
+This repository is a template for building desktop, web, mobile, service, and worker applications from a shared platform core. Instead of duplicating business logic for each application, the architecture shares the domain model, repository abstractions, service layer, OpenAPI contracts, worker protocols, and deployment strategy across every host.
 
 It keeps the same practical boundaries:
 

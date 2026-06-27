@@ -1,6 +1,6 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { spawn } from "node:child_process";
-import { mkdirSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { openWorkspaceDatabase, SqliteWorkspaceRepository } from "@enterprise-analytics/workspace";
@@ -17,6 +17,11 @@ mkdirSync(dirname(databasePath), { recursive: true });
 const db = openWorkspaceDatabase(databasePath);
 const repository = new SqliteWorkspaceRepository(db);
 repository.seedDemoWorkspace();
+
+type CountRow = { count: number };
+
+const openApiPath = join(repoRoot, "services/worker-api-contract/openapi.json");
+const sampleDataPath = join(repoRoot, "sample-data");
 
 function setCorsHeaders(response: ServerResponse) {
   response.setHeader("Access-Control-Allow-Origin", "*");
@@ -58,6 +63,76 @@ function writeMessagePage(response: ServerResponse, title: string, message: stri
 </html>`);
 }
 
+function readOpenApiSpec() {
+  return JSON.parse(readFileSync(openApiPath, "utf8")) as {
+    paths?: Record<string, unknown>;
+    components?: {
+      schemas?: {
+        WorkerJobKind?: {
+          enum?: string[];
+        };
+      };
+    };
+  };
+}
+
+function countTable(tableName: "users" | "projects" | "datasets" | "jobs" | "reports") {
+  return (db.prepare(`SELECT COUNT(*) AS count FROM ${tableName}`).get() as CountRow).count;
+}
+
+function countFiles(directoryPath: string): number {
+  if (!existsSync(directoryPath)) {
+    return 0;
+  }
+
+  return readdirSync(directoryPath, { withFileTypes: true }).reduce((total, entry) => {
+    const entryPath = join(directoryPath, entry.name);
+    return total + (entry.isDirectory() ? countFiles(entryPath) : 1);
+  }, 0);
+}
+
+function getMonitorMetrics() {
+  const openApiSpec = readOpenApiSpec();
+  const datasetCount = countTable("datasets");
+  const reportCount = countTable("reports");
+  const sampleFileCount = countFiles(sampleDataPath);
+  const workerKindCount = openApiSpec.components?.schemas?.WorkerJobKind?.enum?.length ?? 0;
+  const jobCount = countTable("jobs");
+
+  return [
+    ["Projects", countTable("projects")],
+    ["Assets", datasetCount + reportCount + sampleFileCount],
+    ["Datasets", datasetCount],
+    ["Jobs", jobCount],
+    ["Reports", reportCount],
+    ["Users", countTable("users")],
+    ["Tasks", jobCount + workerKindCount + reportCount]
+  ] as const;
+}
+
+function getRuntimeItems() {
+  return [
+    ["SQLite", existsSync(databasePath)],
+    ["REST API", true],
+    ["OpenAPI", existsSync(openApiPath)],
+    ["Demo Seed", countTable("projects") > 0],
+    ["Repository", true],
+    ["Worker Ready", readOpenApiSpec().components?.schemas?.WorkerJobKind?.enum?.length !== undefined]
+  ] as const;
+}
+
+function resetDemoData() {
+  const tx = db.transaction(() => {
+    db.prepare("DELETE FROM reports").run();
+    db.prepare("DELETE FROM jobs").run();
+    db.prepare("DELETE FROM datasets").run();
+    db.prepare("DELETE FROM projects").run();
+    db.prepare("DELETE FROM users").run();
+  });
+  tx();
+  repository.seedDemoWorkspace();
+}
+
 function escapeHtml(value: string) {
   return value
     .replaceAll("&", "&amp;")
@@ -68,7 +143,8 @@ function escapeHtml(value: string) {
 
 function writeStatusPage(response: ServerResponse) {
   const status = getServerStatus();
-  const counts = repository.getDashboardSnapshot().counts;
+  const metrics = getMonitorMetrics();
+  const runtimeItems = getRuntimeItems();
   setCorsHeaders(response);
   response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
   response.end(`<!doctype html>
@@ -76,76 +152,305 @@ function writeStatusPage(response: ServerResponse) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Workspace Server</title>
+  <title>Enterprise Server</title>
   <style>
     :root { color: #17202a; background: #f4f6f3; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
-    main { width: min(860px, 100%); background: #fff; border: 1px solid #dfe5df; border-radius: 8px; padding: 24px; }
-    h1 { margin: 0 0 10px; font-size: 1.6rem; letter-spacing: 0; }
+    main { width: min(1040px, 100%); background: #fff; border: 1px solid #dfe5df; border-radius: 8px; padding: 24px; }
+    h1 { margin: 0; font-size: 1.6rem; letter-spacing: 0; }
+    h2 { margin: 22px 0 10px; font-size: 1rem; letter-spacing: 0; text-transform: uppercase; color: #4f5d55; }
     p { color: #5e6a63; }
+    .status-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 10px; }
     .badge { display: inline-flex; min-height: 34px; align-items: center; padding: 0 12px; border-radius: 8px; font-weight: 800; color: #0f3f2c; background: #c9f0d8; border: 1px solid #83c99e; }
     .path { overflow-wrap: anywhere; padding: 12px; background: #f7f9f7; border: 1px solid #e1e7e1; border-radius: 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.9rem; }
-    dl { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    dl { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
     div.metric { padding: 14px; border: 1px solid #dfe5df; border-radius: 8px; }
     dt { color: #65736b; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; }
     dd { margin: 4px 0 0; font-size: 1.4rem; font-weight: 800; }
-    .links { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
+    .runtime { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin: 10px 0 18px; }
+    .runtime-item { display: flex; min-height: 42px; align-items: center; justify-content: space-between; gap: 8px; padding: 0 12px; border-radius: 8px; background: #f7f9f7; border: 1px solid #dfe5df; font-weight: 800; }
+    .runtime-ok { color: #0f3f2c; }
+    .runtime-bad { color: #8f2f25; }
+    .links { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
     .launch-links { margin-top: 12px; }
     a { display: inline-flex; min-height: 40px; align-items: center; justify-content: center; padding: 0 12px; color: #123c4d; background: #d7edf5; border: 1px solid #9bc9da; border-radius: 8px; font-weight: 800; text-decoration: none; }
+    a.danger { color: #5c1f17; background: #ffd8d1; border-color: #e0a097; }
+    a.future { color: #4f5d55; background: #edf1ed; border-color: #d3dbd3; }
     a:hover { background: #c1e2ee; }
-    @media (max-width: 640px) { dl { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 640px) { .links { grid-template-columns: 1fr; } }
+    @media (max-width: 900px) { dl, .runtime, .links { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 640px) { .status-header { align-items: flex-start; flex-direction: column-reverse; gap: 10px; } dl, .runtime, .links { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <main>
-    <span class="badge">SQLite API ${escapeHtml(status.status)}</span>
-    <h1>Workspace Server</h1>
-    <p>This is the local API used by Web, Electron, and MAUI.</p>
+    <div class="status-header">
+      <h1>Enterprise Server</h1>
+      <span class="badge">SQLite API ${escapeHtml(status.status)}</span>
+    </div>
+    <p>Workspace Monitor for SQLite, OpenAPI, workers, and platform launch targets.</p>
     <div class="path">${escapeHtml(status.databasePath)}</div>
     <dl>
-      <div class="metric"><dt>Projects</dt><dd>${counts.projects}</dd></div>
-      <div class="metric"><dt>Datasets</dt><dd>${counts.datasets}</dd></div>
-      <div class="metric"><dt>Jobs</dt><dd>${counts.jobs}</dd></div>
-      <div class="metric"><dt>Reports</dt><dd>${counts.reports}</dd></div>
+      ${metrics.map(([label, value]) => `<div class="metric"><dt>${escapeHtml(label)}</dt><dd>${value}</dd></div>`).join("")}
     </dl>
-    <nav class="links" aria-label="Workspace server links">
+    <h2>Runtime Panel</h2>
+    <section class="runtime" aria-label="Runtime status">
+      ${runtimeItems.map(([label, ok]) => `<div class="runtime-item"><span>${escapeHtml(label)}</span><strong class="${ok ? "runtime-ok" : "runtime-bad"}">${ok ? "OK" : "OFF"}</strong></div>`).join("")}
+    </section>
+    <nav class="links" aria-label="Developer actions">
+      <a href="/swagger">Open Swagger</a>
+      <a href="/api-docs">Open API Docs</a>
+      <a href="/database">Open Database</a>
+      <a class="danger" href="/action/reset-demo">Reset Demo Data</a>
+      <a href="/action/seed">Seed Workspace</a>
       <a href="/api/status">JSON Status</a>
       <a href="/api/dashboard/snapshot">Dashboard JSON</a>
-      <a href="http://127.0.0.1:5174/">Open Web App</a>
+      <a href="/openapi.json">OpenAPI JSON</a>
     </nav>
     <nav class="links launch-links" aria-label="Launch apps">
+      <a href="http://127.0.0.1:5174/">Open Web</a>
       <a href="/launch/web">Start Web App</a>
-      <a href="/launch/desktop">Start Electron Desktop</a>
-      <a href="/launch/maui">Start .NET MAUI</a>
+      <a href="/launch/desktop">Open Electron</a>
+      <a href="/launch/maui">Open MAUI</a>
+      <a class="future" href="/launch/mobile">Open React Native (future)</a>
     </nav>
   </main>
 </body>
 </html>`);
 }
 
-function runDetached(command: string, args: string[]) {
+function writeSwaggerPage(response: ServerResponse) {
+  const openApiSpec = readOpenApiSpec();
+  const paths = Object.keys(openApiSpec.paths ?? {});
+  setCorsHeaders(response);
+  response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+  response.end(`<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Swagger - Enterprise Server</title>
+  <style>
+    :root { color: #17202a; background: #f4f6f3; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+    main { width: min(860px, 100%); background: #fff; border: 1px solid #dfe5df; border-radius: 8px; padding: 24px; }
+    h1 { margin: 0 0 10px; letter-spacing: 0; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    li { margin: 8px 0; }
+    a { color: #123c4d; font-weight: 800; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Swagger</h1>
+    <p>Local OpenAPI contract for the Enterprise Server.</p>
+    <p><a href="/openapi.json">Open raw OpenAPI JSON</a> · <a href="/">Back to monitor</a></p>
+    <h2>Paths</h2>
+    <ul>
+      ${paths.map((pathName) => `<li><code>${escapeHtml(pathName)}</code></li>`).join("")}
+    </ul>
+  </main>
+</body>
+</html>`);
+}
+
+function writeApiDocsPage(response: ServerResponse) {
+  setCorsHeaders(response);
+  response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+  response.end(`<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>API Docs - Enterprise Server</title>
+  <style>
+    :root { color: #17202a; background: #f4f6f3; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+    main { width: min(860px, 100%); background: #fff; border: 1px solid #dfe5df; border-radius: 8px; padding: 24px; }
+    h1 { margin: 0 0 10px; letter-spacing: 0; }
+    table { width: 100%; border-collapse: collapse; margin-top: 18px; }
+    th, td { padding: 10px; border-bottom: 1px solid #e1e7e1; text-align: left; }
+    code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    a { color: #123c4d; font-weight: 800; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>API Docs</h1>
+    <p>Developer endpoints exposed by the local Enterprise Server.</p>
+    <p><a href="/">Back to monitor</a> · <a href="/openapi.json">OpenAPI JSON</a></p>
+    <table>
+      <thead><tr><th>Method</th><th>Path</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>GET</td><td><code>/api/status</code></td><td>Runtime and storage status.</td></tr>
+        <tr><td>GET</td><td><code>/api/dashboard/snapshot</code></td><td>Dashboard data from SQLite.</td></tr>
+        <tr><td>POST</td><td><code>/api/worker/jobs</code></td><td>Worker contract placeholder.</td></tr>
+        <tr><td>GET</td><td><code>/database</code></td><td>SQLite table browser.</td></tr>
+        <tr><td>GET</td><td><code>/action/seed</code></td><td>Seed demo records.</td></tr>
+        <tr><td>GET</td><td><code>/action/reset-demo</code></td><td>Reset then seed demo records.</td></tr>
+      </tbody>
+    </table>
+  </main>
+</body>
+</html>`);
+}
+
+function writeDatabasePage(response: ServerResponse) {
+  const tableNames = ["users", "projects", "datasets", "jobs", "reports"] as const;
+  const tableSections = tableNames.map((tableName) => {
+    const rows = db.prepare(`SELECT * FROM ${tableName} LIMIT 5`).all() as Record<string, unknown>[];
+    return `<section>
+      <h2>${escapeHtml(tableName)} (${countTable(tableName)})</h2>
+      <pre>${escapeHtml(JSON.stringify(rows, null, 2))}</pre>
+    </section>`;
+  }).join("");
+
+  setCorsHeaders(response);
+  response.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+  response.end(`<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Database Browser - Enterprise Server</title>
+  <style>
+    :root { color: #17202a; background: #f4f6f3; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; min-height: 100vh; padding: 24px; }
+    main { width: min(960px, 100%); margin: 0 auto; background: #fff; border: 1px solid #dfe5df; border-radius: 8px; padding: 24px; }
+    h1 { margin: 0 0 10px; letter-spacing: 0; }
+    h2 { margin-top: 22px; }
+    pre { overflow: auto; padding: 14px; background: #f7f9f7; border: 1px solid #e1e7e1; border-radius: 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.85rem; }
+    a { color: #123c4d; font-weight: 800; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Database Browser</h1>
+    <p>SQLite file: <code>${escapeHtml(databasePath)}</code></p>
+    <p><a href="/">Back to monitor</a></p>
+    ${tableSections}
+  </main>
+</body>
+</html>`);
+}
+
+function runDetached(command: string, args: string[], hideWindow = false, workingDirectory = repoRoot, extraEnv: NodeJS.ProcessEnv = {}) {
+  if (process.platform === "win32" && command.toLowerCase().endsWith(".exe")) {
+    const child = spawn(command, args, {
+      cwd: workingDirectory,
+      detached: true,
+      env: {
+        ...process.env,
+        ...extraEnv
+      },
+      stdio: "ignore",
+      windowsHide: hideWindow
+    });
+    child.on("error", (error) => {
+      console.error(`Failed to launch ${command}:`, error);
+    });
+    child.unref();
+    return;
+  }
+
+  if (process.platform === "win32") {
+    const programFiles = process.env.ProgramFiles ?? "C:\\Program Files";
+    const resolvedCommand =
+      command === "npm.cmd"
+        ? join(programFiles, "nodejs", "npm.cmd")
+        : command === "dotnet"
+          ? join(programFiles, "dotnet", "dotnet.exe")
+          : command;
+    const windowStyle = hideWindow ? " -WindowStyle Hidden" : "";
+    const psCommand = [
+      "$ErrorActionPreference = 'Stop'",
+      `$argsList = @(${args.map((arg) => `'${arg.replaceAll("'", "''")}'`).join(",")})`,
+      `Start-Process -FilePath '${resolvedCommand.replaceAll("'", "''")}' -ArgumentList $argsList -WorkingDirectory '${workingDirectory.replaceAll("'", "''")}'${windowStyle}`
+    ].join("; ");
+
+    const child = spawn("powershell.exe", ["-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", psCommand], {
+      cwd: repoRoot,
+      detached: true,
+      stdio: "ignore",
+      windowsHide: true
+    });
+    child.on("error", (error) => {
+      console.error(`Failed to launch ${command}:`, error);
+    });
+    child.unref();
+    return;
+  }
+
   const child = spawn(command, args, {
-    cwd: repoRoot,
+    cwd: workingDirectory,
     detached: true,
-    stdio: "ignore",
-    windowsHide: true
+    env: {
+      ...process.env,
+      ...extraEnv
+    },
+    stdio: "ignore"
+  });
+  child.on("error", (error) => {
+    console.error(`Failed to launch ${command}:`, error);
   });
   child.unref();
 }
 
-function launchTarget(target: "web" | "desktop" | "maui") {
+function openUrl(url: string) {
+  if (process.platform === "win32") {
+    runDetached("C:\\Windows\\System32\\cmd.exe", ["/c", "start", "", url], true);
+    return;
+  }
+
+  runDetached(process.platform === "darwin" ? "open" : "xdg-open", [url]);
+}
+
+function launchWebDevServer() {
+  if (process.platform === "win32") {
+    runDetached("C:\\Windows\\System32\\cmd.exe", [
+      "/c",
+      "start",
+      "Enterprise Web",
+      "/min",
+      "cmd.exe",
+      "/c",
+      `cd /d "${repoRoot}" && npm.cmd run dev:web:client`
+    ], true);
+    return;
+  }
+
+  runDetached("npm", ["run", "dev:web:client"]);
+}
+
+function launchTarget(target: "web" | "desktop" | "maui" | "mobile") {
   if (target === "web") {
-    runDetached(process.platform === "win32" ? "npm.cmd" : "npm", ["run", "dev:web:client"]);
-    return "Web app launch requested. Open http://127.0.0.1:5174/ after a moment.";
+    launchWebDevServer();
+    openUrl("http://127.0.0.1:5174/");
+    return "Web app launch requested and browser open requested.";
   }
 
   if (target === "desktop") {
-    runDetached(process.platform === "win32" ? "npm.cmd" : "npm", ["--workspace", "@enterprise-analytics/desktop", "run", "electron:dev"]);
+    launchWebDevServer();
+    const electronPath = join(repoRoot, "apps/desktop/node_modules/electron/dist/electron.exe");
+    if (process.platform === "win32" && existsSync(electronPath)) {
+      runDetached(electronPath, ["."], false, join(repoRoot, "apps/desktop"), {
+        ANALYTICS_WEB_URL: "http://127.0.0.1:5174"
+      });
+    } else {
+      runDetached(process.platform === "win32" ? "npm.cmd" : "npm", ["--workspace", "@enterprise-analytics/desktop", "run", "electron:dev"]);
+    }
     return "Electron desktop launch requested.";
   }
 
-  runDetached("dotnet", ["build", join(repoRoot, "apps/maui/EnterpriseAnalytics.Maui.csproj"), "-t:Run", "-f", "net10.0-windows10.0.19041.0"]);
+  if (target === "mobile") {
+    return "React Native is planned for this monitor, but not launched from the server yet.";
+  }
+
+  const mauiExePath = join(repoRoot, "apps/maui/bin/Debug/net10.0-windows10.0.19041.0/win-x64/EnterpriseAnalytics.Maui.exe");
+  if (process.platform === "win32" && existsSync(mauiExePath)) {
+    runDetached(mauiExePath, [], false, repoRoot);
+  } else {
+    runDetached("dotnet", ["build", join(repoRoot, "apps/maui/EnterpriseAnalytics.Maui.csproj"), "-t:Run", "-f", "net10.0-windows10.0.19041.0"]);
+  }
   return ".NET MAUI launch requested.";
 }
 
@@ -189,6 +494,26 @@ const server = createServer((request, response) => {
     return;
   }
 
+  if (route.method === "GET" && route.pathname === "/openapi.json") {
+    writeJson(response, 200, readOpenApiSpec());
+    return;
+  }
+
+  if (route.method === "GET" && route.pathname === "/swagger") {
+    writeSwaggerPage(response);
+    return;
+  }
+
+  if (route.method === "GET" && route.pathname === "/api-docs") {
+    writeApiDocsPage(response);
+    return;
+  }
+
+  if (route.method === "GET" && route.pathname === "/database") {
+    writeDatabasePage(response);
+    return;
+  }
+
   if (route.method === "GET" && (route.pathname === "/health" || route.pathname === "/api/status")) {
     writeJson(response, 200, getServerStatus());
     return;
@@ -206,6 +531,23 @@ const server = createServer((request, response) => {
 
   if (route.method === "GET" && route.pathname === "/launch/maui") {
     writeMessagePage(response, "Starting .NET MAUI", launchTarget("maui"));
+    return;
+  }
+
+  if (route.method === "GET" && route.pathname === "/launch/mobile") {
+    writeMessagePage(response, "React Native Future Target", launchTarget("mobile"));
+    return;
+  }
+
+  if (route.method === "GET" && route.pathname === "/action/seed") {
+    repository.seedDemoWorkspace();
+    writeMessagePage(response, "Seed Workspace", "Demo workspace records were seeded.");
+    return;
+  }
+
+  if (route.method === "GET" && route.pathname === "/action/reset-demo") {
+    resetDemoData();
+    writeMessagePage(response, "Reset Demo Data", "Demo workspace data was reset and seeded again.");
     return;
   }
 

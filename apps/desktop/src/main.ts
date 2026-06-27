@@ -34,6 +34,29 @@ async function waitForWorkspaceServer() {
   return false;
 }
 
+async function isUrlAvailable(url: string) {
+  try {
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(750)
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function waitForUrl(url: string) {
+  for (let attempt = 0; attempt < 60; attempt += 1) {
+    if (await isUrlAvailable(url)) {
+      return true;
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+
+  return false;
+}
+
 async function ensureWorkspaceServer() {
   if (await isWorkspaceServerAvailable()) {
     return;
@@ -78,9 +101,15 @@ async function createMainWindow() {
 
   const devUrl = process.env.ANALYTICS_WEB_URL;
   if (devUrl) {
+    await waitForUrl(devUrl);
     await mainWindow.loadURL(devUrl);
   } else {
-    await mainWindow.loadFile(join(__dirname, "../../web/dist/index.html"));
+    const webIndexPath = join(__dirname, "../../web/dist/index.html");
+    if (existsSync(webIndexPath)) {
+      await mainWindow.loadFile(webIndexPath);
+    } else {
+      await mainWindow.loadURL("http://127.0.0.1:5174");
+    }
   }
 }
 
