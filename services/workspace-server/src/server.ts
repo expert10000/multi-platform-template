@@ -92,32 +92,22 @@ function countFiles(directoryPath: string): number {
 }
 
 function getMonitorMetrics() {
-  const openApiSpec = readOpenApiSpec();
-  const datasetCount = countTable("datasets");
-  const reportCount = countTable("reports");
-  const sampleFileCount = countFiles(sampleDataPath);
-  const workerKindCount = openApiSpec.components?.schemas?.WorkerJobKind?.enum?.length ?? 0;
-  const jobCount = countTable("jobs");
-
   return [
-    ["Projects", countTable("projects")],
-    ["Assets", datasetCount + reportCount + sampleFileCount],
-    ["Datasets", datasetCount],
-    ["Jobs", jobCount],
-    ["Reports", reportCount],
-    ["Users", countTable("users")],
-    ["Tasks", jobCount + workerKindCount + reportCount]
+    { label: "Projects", value: countTable("projects"), detail: "Saved projects in SQLite." },
+    { label: "Datasets", value: countTable("datasets"), detail: "Imported dataset records in SQLite." },
+    { label: "Jobs", value: countTable("jobs"), detail: "Recorded jobs, not active worker processes." },
+    { label: "Reports", value: countTable("reports"), detail: "Report records in SQLite." },
+    { label: "Users", value: countTable("users"), detail: "User records in SQLite." },
+    { label: "Sample files", value: countFiles(sampleDataPath), detail: "Files under data/sample on disk." }
   ] as const;
 }
 
 function getRuntimeItems() {
   return [
-    ["SQLite", existsSync(databasePath)],
-    ["REST API", true],
-    ["OpenAPI", existsSync(openApiPath)],
-    ["Demo Seed", countTable("projects") > 0],
-    ["Repository", true],
-    ["Worker Ready", readOpenApiSpec().components?.schemas?.WorkerJobKind?.enum?.length !== undefined]
+    { label: "SQLite", state: "Open", detail: "This server has opened the database file.", tone: "ok" },
+    { label: "HTTP API", state: "Serving", detail: `Listening at http://${host}:${port}/api.`, tone: "ok" },
+    { label: "OpenAPI contract", state: existsSync(openApiPath) ? "Available" : "Missing", detail: "Schema served at /openapi.json.", tone: existsSync(openApiPath) ? "ok" : "bad" },
+    { label: "Worker job API", state: "Not wired", detail: "POST /api/worker/jobs currently returns 501; run workers through their CLI scripts.", tone: "pending" }
   ] as const;
 }
 
@@ -155,64 +145,122 @@ function writeStatusPage(response: ServerResponse) {
   <title>Workspace Monitor</title>
   <style>
     :root { color: #17202a; background: #f4f6f3; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
-    main { width: min(1040px, 100%); background: #fff; border: 1px solid #dfe5df; border-radius: 8px; padding: 24px; }
-    h1 { margin: 0; font-size: 1.6rem; letter-spacing: 0; }
-    h2 { margin: 22px 0 10px; font-size: 1rem; letter-spacing: 0; text-transform: uppercase; color: #4f5d55; }
-    p { color: #5e6a63; }
-    .status-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 10px; }
-    .badge { display: inline-flex; min-height: 34px; align-items: center; padding: 0 12px; border-radius: 8px; font-weight: 800; color: #0f3f2c; background: #c9f0d8; border: 1px solid #83c99e; }
-    .path { overflow-wrap: anywhere; padding: 12px; background: #f7f9f7; border: 1px solid #e1e7e1; border-radius: 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 0.9rem; }
-    dl { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
-    div.metric { padding: 14px; border: 1px solid #dfe5df; border-radius: 8px; }
-    dt { color: #65736b; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; }
-    dd { margin: 4px 0 0; font-size: 1.4rem; font-weight: 800; }
-    .runtime { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin: 10px 0 18px; }
-    .runtime-item { display: flex; min-height: 42px; align-items: center; justify-content: space-between; gap: 8px; padding: 0 12px; border-radius: 8px; background: #f7f9f7; border: 1px solid #dfe5df; font-weight: 800; }
-    .runtime-ok { color: #0f3f2c; }
-    .runtime-bad { color: #8f2f25; }
-    .links { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
-    .launch-links { margin-top: 12px; }
-    a { display: inline-flex; min-height: 40px; align-items: center; justify-content: center; padding: 0 12px; color: #123c4d; background: #d7edf5; border: 1px solid #9bc9da; border-radius: 8px; font-weight: 800; text-decoration: none; }
-    a.danger { color: #5c1f17; background: #ffd8d1; border-color: #e0a097; }
-    a.future { color: #4f5d55; background: #edf1ed; border-color: #d3dbd3; }
-    a:hover { background: #c1e2ee; }
-    @media (max-width: 900px) { dl, .runtime, .links { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 640px) { .status-header { align-items: flex-start; flex-direction: column-reverse; gap: 10px; } dl, .runtime, .links { grid-template-columns: 1fr; } }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 24px; }
+    main { width: min(1180px, 100%); margin: 0 auto; padding: 28px; background: #fff; border: 1px solid #dfe5df; border-radius: 12px; }
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { margin-bottom: 6px; font-size: 1.7rem; }
+    h2 { margin-bottom: 6px; font-size: 1.15rem; }
+    h3 { margin-bottom: 0; font-size: 1rem; }
+    p { color: #526159; line-height: 1.5; }
+    section { margin-top: 30px; }
+    .top, .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+    .badge, .tag, .state { display: inline-flex; align-items: center; border-radius: 999px; font-size: 0.8rem; font-weight: 800; white-space: nowrap; }
+    .badge { padding: 8px 12px; color: #0f3f2c; background: #d5f1df; border: 1px solid #83c99e; }
+    .tag { padding: 4px 9px; color: #385667; background: #e9f3f8; }
+    .state { padding: 4px 9px; }
+    .state.ok { color: #0f5932; background: #dcf3e3; }
+    .state.bad { color: #8f2f25; background: #ffe6e1; }
+    .state.pending { color: #77550c; background: #fff1ca; }
+    .database { margin-top: 14px; padding: 12px 14px; background: #f7f9f7; border: 1px solid #e1e7e1; border-radius: 8px; }
+    .database strong { display: block; margin-bottom: 4px; font-size: 0.8rem; text-transform: uppercase; color: #526159; }
+    .database code { overflow-wrap: anywhere; }
+    .section-intro { margin-bottom: 16px; }
+    .app-grid, .metric-grid, .status-grid, .tool-grid { display: grid; gap: 12px; }
+    .app-grid, .status-grid, .tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; }
+    .card { min-width: 0; padding: 16px; border: 1px solid #dfe5df; border-radius: 10px; }
+    .card p { margin: 9px 0 0; font-size: 0.9rem; }
+    .command { display: block; margin-top: 10px; font-size: 0.83rem; color: #526159; }
+    code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    a.action { display: inline-flex; min-height: 36px; align-items: center; padding: 6px 11px; border: 1px solid #9bc9da; border-radius: 7px; color: #123c4d; background: #d7edf5; font-size: 0.88rem; font-weight: 800; text-decoration: none; }
+    a.action:hover { background: #c1e2ee; }
+    a.action.danger { color: #67261d; background: #ffe0da; border-color: #e9a59a; }
+    .metric dt { color: #526159; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; }
+    .metric dd { margin: 5px 0; font-size: 1.55rem; font-weight: 800; }
+    .tool a { color: #123c4d; font-weight: 800; }
+    .note { padding: 12px 14px; border-radius: 8px; background: #fff8e9; border: 1px solid #f2dbad; }
+    @media (max-width: 760px) { .app-grid, .metric-grid, .status-grid, .tool-grid { grid-template-columns: 1fr; } .top { flex-direction: column; } }
+    @media (max-width: 520px) { body { padding: 10px; } main { padding: 18px; } }
   </style>
 </head>
 <body>
   <main>
-    <div class="status-header">
-      <h1>Workspace Monitor</h1>
-      <span class="badge">Workspace Server ${escapeHtml(status.status)}</span>
+    <div class="top">
+      <div>
+        <h1>Workspace Server</h1>
+        <p>This is the local API and data monitor. The applications below are separate hosts that use workspace data.</p>
+      </div>
+      <span class="badge">Server ${escapeHtml(status.status)}</span>
     </div>
-    <p>Admin UI for the shared Workspace Server, SQLite, OpenAPI, workers, and platform launch targets.</p>
-    <div class="path">${escapeHtml(status.databasePath)}</div>
-    <dl>
-      ${metrics.map(([label, value]) => `<div class="metric"><dt>${escapeHtml(label)}</dt><dd>${value}</dd></div>`).join("")}
-    </dl>
-    <h2>Runtime Panel</h2>
-    <section class="runtime" aria-label="Runtime status">
-      ${runtimeItems.map(([label, ok]) => `<div class="runtime-item"><span>${escapeHtml(label)}</span><strong class="${ok ? "runtime-ok" : "runtime-bad"}">${ok ? "OK" : "OFF"}</strong></div>`).join("")}
+    <div class="database"><strong>SQLite database file</strong><code>${escapeHtml(status.databasePath)}</code></div>
+
+    <section aria-labelledby="apps-title">
+      <h2 id="apps-title">Applications in this repository</h2>
+      <p class="section-intro">Four application hosts are present. The workspace server on this page is their backend, not another user-facing app.</p>
+      <div class="app-grid">
+        <article class="card">
+          <div class="card-head"><h3>React Web</h3><span class="tag">Browser</span></div>
+          <p>Dashboard and workspace UI. It reads the SQLite-backed snapshot from this server, with bundled demo data as a fallback.</p>
+          <div class="actions"><a class="action" href="http://127.0.0.1:5184/">Open Web app</a></div>
+          <span class="command">Start locally: <code>npm run dev:web</code></span>
+        </article>
+        <article class="card">
+          <div class="card-head"><h3>Electron Desktop</h3><span class="tag">Desktop</span></div>
+          <p>Native window for the same React Web UI. It connects to the workspace server and can start it when needed.</p>
+          <div class="actions"><a class="action" href="/launch/desktop">Launch Electron</a></div>
+          <span class="command">Start locally: <code>npm run dev:desktop</code></span>
+        </article>
+        <article class="card">
+          <div class="card-head"><h3>.NET MAUI</h3><span class="tag">Native C#</span></div>
+          <p>Separate native dashboard using the same HTTP snapshot contract. This launch action targets Windows.</p>
+          <div class="actions"><a class="action" href="/launch/maui">Launch MAUI on Windows</a></div>
+          <span class="command">Start locally: <code>npm run dev:maui</code></span>
+        </article>
+        <article class="card">
+          <div class="card-head"><h3>React Native</h3><span class="tag">Expo</span></div>
+          <p>Mobile shell for Android and iOS. It currently shows shared demo data; server integration and launching from this page are not wired.</p>
+          <span class="command">Start locally: <code>npm run dev:mobile</code></span>
+        </article>
+      </div>
     </section>
-    <nav class="links" aria-label="Developer actions">
-      <a href="/swagger">Open Swagger</a>
-      <a href="/api-docs">Open API Docs</a>
-      <a href="/database">Open Database</a>
-      <a class="danger" href="/action/reset-demo">Reset Demo Data</a>
-      <a href="/action/seed">Seed Workspace</a>
-      <a href="/api/status">JSON Status</a>
-      <a href="/api/dashboard/snapshot">Dashboard JSON</a>
-      <a href="/openapi.json">OpenAPI JSON</a>
-    </nav>
-    <nav class="links launch-links" aria-label="Launch apps">
-      <a href="http://127.0.0.1:5184/">Open Enterprise Platform Web</a>
-      <a href="/launch/web">Start Enterprise Platform Web</a>
-      <a href="/launch/desktop">Open Enterprise Platform</a>
-      <a href="/launch/maui">Open MAUI</a>
-      <a class="future" href="/launch/mobile">Open React Native (future)</a>
-    </nav>
+
+    <section aria-labelledby="data-title">
+      <h2 id="data-title">Workspace data</h2>
+      <p class="section-intro">Counts are SQLite records except for sample files, which are counted on disk.</p>
+      <dl class="metric-grid">
+        ${metrics.map(({ label, value, detail }) => `<div class="card metric"><dt>${escapeHtml(label)}</dt><dd>${value}</dd><p>${escapeHtml(detail)}</p></div>`).join("")}
+      </dl>
+    </section>
+
+    <section aria-labelledby="status-title">
+      <h2 id="status-title">Service status</h2>
+      <div class="status-grid">
+        ${runtimeItems.map(({ label, state, detail, tone }) => `<div class="card"><div class="card-head"><h3>${escapeHtml(label)}</h3><span class="state ${tone}">${escapeHtml(state)}</span></div><p>${escapeHtml(detail)}</p></div>`).join("")}
+      </div>
+    </section>
+
+    <section aria-labelledby="tools-title">
+      <h2 id="tools-title">Inspect the server</h2>
+      <div class="tool-grid">
+        <div class="card tool"><a href="/api-docs">API endpoint guide</a><p>Methods and purposes for the local HTTP endpoints.</p></div>
+        <div class="card tool"><a href="/swagger">OpenAPI route list</a><p>Paths declared in the contract; this is not an interactive Swagger console.</p></div>
+        <div class="card tool"><a href="/database">Browse SQLite records</a><p>Shows the first five rows in each workspace table.</p></div>
+        <div class="card tool"><a href="/api/dashboard/snapshot">Dashboard JSON</a><p>The snapshot read by Web, Electron, and MAUI.</p></div>
+        <div class="card tool"><a href="/api/status">Server status JSON</a><p>Server state, storage type, and database path.</p></div>
+        <div class="card tool"><a href="/openapi.json">OpenAPI contract JSON</a><p>The machine-readable API and worker schema.</p></div>
+      </div>
+    </section>
+
+    <section aria-labelledby="demo-title">
+      <h2 id="demo-title">Demo data controls</h2>
+      <p class="note">Seed adds or updates the built-in example records by ID. Reset deletes every user, project, dataset, job, and report record in the SQLite file above, then restores the built-in examples.</p>
+      <div class="actions">
+        <a class="action" href="/action/seed">Seed example records</a>
+        <a class="action danger" href="/action/reset-demo" onclick="return confirm('Delete all workspace records in this SQLite file, then restore the built-in examples?')">Reset all records to examples</a>
+      </div>
+    </section>
   </main>
 </body>
 </html>`);
@@ -228,7 +276,7 @@ function writeSwaggerPage(response: ServerResponse) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Swagger - Workspace Server</title>
+  <title>OpenAPI Route List - Workspace Server</title>
   <style>
     :root { color: #17202a; background: #f4f6f3; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
@@ -241,8 +289,8 @@ function writeSwaggerPage(response: ServerResponse) {
 </head>
 <body>
   <main>
-    <h1>Workspace Server Swagger</h1>
-    <p>Local OpenAPI contract for the Workspace Server.</p>
+    <h1>OpenAPI Route List</h1>
+    <p>Paths declared in the Workspace Server contract. Open the raw JSON for methods, schemas, and response details.</p>
     <p><a href="/openapi.json">Open raw OpenAPI JSON</a> · <a href="/">Back to monitor</a></p>
     <h2>Paths</h2>
     <ul>
