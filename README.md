@@ -20,6 +20,22 @@ It keeps the same practical boundaries:
 - `docker` - containerized worker/runtime entrypoints.
 - `docs` - architecture and platform notes.
 
+## Architecture Diagrams
+
+These illustrations show proposed repository organization and the platform's application layers. Some folder names in the illustrations differ from the current checkout; the directory list above reflects the actual paths.
+
+### Proposed Repository Layout
+
+![Recommended repository structure diagram](docs/images/Z30.png)
+
+### Expanded Repository Overview
+
+![Multi-platform template repository overview](docs/images/Z50.jpg)
+
+### Platform Architecture
+
+![Application hosts, contracts, services, and workers architecture](docs/images/Z70.jpg)
+
 ## Platform Stack
 
 - Desktop: Electron + React.
