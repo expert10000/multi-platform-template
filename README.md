@@ -2,11 +2,11 @@
 
 This repository is a template for building desktop, web, mobile, service, and worker applications from a shared platform core. Instead of duplicating business logic for each application, the architecture shares the domain model, repository abstractions, service layer, OpenAPI contracts, worker protocols, and deployment strategy across every host.
 
-## Platform Architecture
+The same React interface runs in a browser and inside Electron, while .NET MAUI and React Native provide additional application hosts. The hosts use a shared HTTP and OpenAPI boundary to reach workspace data. Python and Node workers handle analytics and automation tasks.
 
 ![Application hosts, contracts, services, and workers architecture](docs/images/Z100.jpg)
 
-## Repository Layout
+The source tree follows those responsibilities: `apps` contains the hosts, `packages` holds shared code and contracts, and `services` contains the workspace server and workers. Sample data, documentation, deployment files, scripts, and tests have their own top-level directories.
 
 ![Recommended repository structure diagram](docs/images/Z30.png)
 
