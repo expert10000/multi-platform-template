@@ -48,7 +48,7 @@ export const demoDashboardSnapshot: DashboardSnapshot = {
       projectId: "project-real-retail-benchmarks",
       name: "Online Retail.xlsx",
       kind: "sales",
-      sourcePath: "sample-data/real/online-retail/Online Retail.xlsx",
+      sourcePath: "data/sample/real/online-retail/Online Retail.xlsx",
       rowCount: 541909,
       importedAt: now
     },
@@ -57,7 +57,7 @@ export const demoDashboardSnapshot: DashboardSnapshot = {
       projectId: "project-real-retail-benchmarks",
       name: "superstore_train.csv",
       kind: "sales",
-      sourcePath: "sample-data/real/superstore-sales/train.csv",
+      sourcePath: "data/sample/real/superstore-sales/train.csv",
       rowCount: 9800,
       importedAt: now
     },
@@ -66,7 +66,7 @@ export const demoDashboardSnapshot: DashboardSnapshot = {
       projectId: "project-sales-forecast-2026",
       name: "sales_q1.csv",
       kind: "sales",
-      sourcePath: "sample-data/online-retail.csv",
+      sourcePath: "data/sample/online-retail.csv",
       rowCount: 8,
       importedAt: now
     },
@@ -75,7 +75,7 @@ export const demoDashboardSnapshot: DashboardSnapshot = {
       projectId: "project-sales-forecast-2026",
       name: "production_week.csv",
       kind: "production",
-      sourcePath: "sample-data/production.csv",
+      sourcePath: "data/sample/production.csv",
       rowCount: 4,
       importedAt: now
     }

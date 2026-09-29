@@ -47,7 +47,7 @@ docker compose -f docker/docker-compose.yml up --build
 The container reads:
 
 ```text
-sample-data/online-retail.csv
+data/sample/online-retail.csv
 ```
 
 and writes:

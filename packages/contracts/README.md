@@ -15,7 +15,7 @@ Both should speak the same high-level shape:
   "kind": "csv.import",
   "runtime": "node",
   "input": {
-    "path": "sample-data/real/superstore-sales/train.csv",
+    "path": "data/sample/real/superstore-sales/train.csv",
     "mediaType": "text/csv"
   },
   "output": {

@@ -15,7 +15,7 @@ services:
       - --job
       - kpi
       - --input
-      - sample-data/online-retail.csv
+      - data/sample/online-retail.csv
       - --output
       - reports/kpi-analysis.json
     volumes:

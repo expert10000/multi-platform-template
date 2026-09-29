@@ -7,7 +7,7 @@ These files are extracted from user-provided archives and are intentionally kept
 Path:
 
 ```text
-sample-data/real/online-retail/Online Retail.xlsx
+data/sample/real/online-retail/Online Retail.xlsx
 ```
 
 Shape:
@@ -28,7 +28,7 @@ Worker mapping:
 Path:
 
 ```text
-sample-data/real/superstore-sales/train.csv
+data/sample/real/superstore-sales/train.csv
 ```
 
 Shape:

@@ -26,15 +26,15 @@ services/workspace-server
   -> shared repository interface
   -> SQLite database
 
-services/worker-python
+services/workers/python
   -> Pandas CSV analysis
   -> JSON / HTML / PDF-ready output
 
-services/worker-node
+services/workers/node
   -> CSV import and validation
   -> transformations, notifications, email drafts
 
-services/worker-api-contract
+packages/contracts
   -> OpenAPI schema for dashboard and worker contracts
   -> TypeScript request/result envelope
 ```
@@ -87,7 +87,7 @@ Workers read CSV and Excel files, compute analysis or workflow results, and writ
 
 ## Contract Boundary
 
-OpenAPI is the cross-runtime boundary for app data. TypeScript packages keep the primary domain model, while C# clients such as MAUI consume matching DTOs generated from or aligned with `services/worker-api-contract/openapi.json`.
+OpenAPI is the cross-runtime boundary for app data. TypeScript packages keep the primary domain model, while C# clients such as MAUI consume matching DTOs generated from or aligned with `packages/contracts/openapi.json`.
 
 The starter contract includes:
 

@@ -2,10 +2,10 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-COPY services/worker-python/requirements.txt /app/services/worker-python/requirements.txt
-RUN pip install --no-cache-dir -r /app/services/worker-python/requirements.txt
+COPY services/workers/python/requirements.txt /app/services/workers/python/requirements.txt
+RUN pip install --no-cache-dir -r /app/services/workers/python/requirements.txt
 
-COPY services/worker-python /app/services/worker-python
-COPY sample-data /app/sample-data
+COPY services/workers/python /app/services/workers/python
+COPY data/sample /app/data/sample
 
-ENTRYPOINT ["python", "services/worker-python/service/main.py"]
+ENTRYPOINT ["python", "services/workers/python/service/main.py"]

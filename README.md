@@ -1,4 +1,4 @@
-# Enterprise Platform Template
+# Multi-Platform Template
 
 This repository is a template for building desktop, web, mobile, service, and worker applications from a shared platform core. Instead of duplicating business logic for each application, the architecture shares the domain model, repository abstractions, service layer, OpenAPI contracts, worker protocols, and deployment strategy across every host.
 
@@ -8,33 +8,33 @@ It keeps the same practical boundaries:
 - `apps/web` - Enterprise Platform Web, a React browser host for the analytics dashboard and workspace UI.
 - `apps/mobile` - Expo/React Native mobile shell.
 - `apps/maui` - optional .NET MAUI native shell for Windows, Android, iOS, and Mac Catalyst.
-- `packages/core` - shared domain model and analytics contracts.
+- `packages/domain` - shared domain model and analytics logic.
+- `packages/contracts` - shared OpenAPI and TypeScript request/result contract for platform shells and workers.
 - `packages/ui` - shared React UI primitives.
 - `packages/workspace` - repository layer for projects, datasets, jobs, reports, and users.
-- `services/worker-python` - Pandas worker for KPI, trend, and report generation jobs.
-- `services/worker-api-contract` - shared OpenAPI and TypeScript request/result contract for platform shells and workers.
 - `services/workspace-server` - local HTTP API over the shared SQLite repository.
-- `services/worker-node` - Node worker for CSV import, validation, transformations, notifications, and email generation.
-- `sample-data` - CSV business data for sales, inventory, and production examples.
-- `sample-data/real` - larger real-world retail datasets extracted from user-provided archives.
+- `services/workers/python` - Pandas worker for KPI, trend, and report generation jobs.
+- `services/workers/node` - Node worker for CSV import, validation, transformations, notifications, and email generation.
+- `data/sample` - CSV business data for sales, inventory, and production examples.
+- `data/sample/real` - larger real-world retail datasets extracted from user-provided archives.
 - `docker` - containerized worker/runtime entrypoints.
 - `docs` - architecture and platform notes.
 
 ## Architecture Diagrams
 
-These illustrations show proposed repository organization and the platform's application layers. Some folder names in the illustrations differ from the current checkout; the directory list above reflects the actual paths.
+The first repository diagram shows the current folder layout. The second is an earlier conceptual overview whose paths differ in places; use the directory list above for current paths.
 
-### Proposed Repository Layout
+### Repository Layout
 
 ![Recommended repository structure diagram](docs/images/Z30.png)
 
-### Expanded Repository Overview
+### Earlier Repository Overview (Conceptual)
 
 ![Multi-platform template repository overview](docs/images/Z50.jpg)
 
 ### Platform Architecture
 
-![Application hosts, contracts, services, and workers architecture](docs/images/Z70.jpg)
+![Application hosts, contracts, services, and workers architecture](docs/images/Z100.jpg)
 
 ## Platform Stack
 
@@ -109,14 +109,14 @@ npm run dev:maui
 Run a sample KPI job:
 
 ```bash
-python services/worker-python/service/main.py --job kpi --input sample-data/online-retail.csv --output reports/kpi-analysis.json
+python services/workers/python/service/main.py --job kpi --input data/sample/online-retail.csv --output reports/kpi-analysis.json
 ```
 
 Run KPI jobs against the real imported datasets:
 
 ```bash
-python services/worker-python/service/main.py --job kpi --input sample-data/real/superstore-sales/train.csv --output reports/superstore-kpi-analysis.json
-python services/worker-python/service/main.py --job kpi --input "sample-data/real/online-retail/Online Retail.xlsx" --output reports/online-retail-kpi-analysis.json
+python services/workers/python/service/main.py --job kpi --input data/sample/real/superstore-sales/train.csv --output reports/superstore-kpi-analysis.json
+python services/workers/python/service/main.py --job kpi --input "data/sample/real/online-retail/Online Retail.xlsx" --output reports/online-retail-kpi-analysis.json
 ```
 
 Run Node workflow jobs:
@@ -133,7 +133,7 @@ Check the OpenAPI contract:
 npm run check:openapi
 ```
 
-The shared contract is documented in `docs/shared-contract.md`. The workspace server is documented in `docs/workspace-server.md`. The .NET MAUI native shell is documented in `docs/maui.md`.
+The shared contract is documented in `docs/architecture/shared-contract.md`. The workspace server is documented in `docs/operations/workspace-server.md`. The .NET MAUI native shell is documented in `docs/hosts/maui.md`.
 
 Run Enterprise Platform Web in Docker:
 

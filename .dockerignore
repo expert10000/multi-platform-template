@@ -3,10 +3,12 @@ node_modules
 apps/*/node_modules
 packages/*/node_modules
 services/*/node_modules
+services/workers/*/node_modules
 dist
 apps/*/dist
 packages/*/dist
 services/*/dist
+services/workers/*/dist
 reports
 release
 coverage

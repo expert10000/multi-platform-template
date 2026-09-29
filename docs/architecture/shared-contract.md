@@ -11,9 +11,9 @@ This keeps each platform free to use its natural language and UI stack:
 
 ## Contract Files
 
-- `services/worker-api-contract/openapi.json` is the source contract for cross-runtime app data.
-- `services/worker-api-contract/src/index.ts` contains TypeScript worker request/result types.
-- `services/worker-api-contract/examples/dashboard-snapshot.json` is a small contract-shaped dashboard payload.
+- `packages/contracts/openapi.json` is the source contract for cross-runtime app data.
+- `packages/contracts/src/index.ts` contains TypeScript worker request/result types.
+- `packages/contracts/examples/dashboard-snapshot.json` is a small contract-shaped dashboard payload.
 - `services/workspace-server` serves the local OpenAPI-shaped API over HTTP.
 
 ## Current API Shape
@@ -23,7 +23,7 @@ The starter OpenAPI contract includes:
 - `GET /dashboard/snapshot` for projects, datasets, jobs, reports, and KPI cards.
 - `POST /worker/jobs` for worker execution requests.
 
-The dashboard schema mirrors the main TypeScript domain model in `packages/core`, while remaining neutral enough for C# clients.
+The dashboard schema mirrors the main TypeScript domain model in `packages/domain`, while remaining neutral enough for C# clients.
 
 ## .NET MAUI Consumption
 

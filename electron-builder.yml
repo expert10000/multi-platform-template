@@ -17,8 +17,8 @@ files:
   - apps/desktop/package.json
   - apps/desktop/dist/**/*
   - apps/web/dist/**/*
-  - packages/core/package.json
-  - packages/core/dist/**/*
+  - packages/domain/package.json
+  - packages/domain/dist/**/*
   - packages/workspace/package.json
   - packages/workspace/dist/**/*
   - node_modules/better-sqlite3/**/*

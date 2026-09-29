@@ -1,18 +1,17 @@
 {
-  "name": "analysis-workspace-template",
+  "name": "multi-platform-template",
   "private": true,
   "version": "0.1.1",
   "license": "Apache-2.0",
   "author": "Enterprise Platform",
   "homepage": "https://github.com/expert10000/multi-platform-template",
   "desktopName": "enterprise-platform",
-  "description": "Enterprise Platform template with desktop, web, mobile, Workspace Server, and Python Worker hosts.",
+  "description": "Multi-platform template with desktop, web, mobile, workspace server, and Python and Node worker hosts.",
   "workspaces": [
     "apps/*",
     "packages/*",
-    "services/worker-api-contract",
     "services/workspace-server",
-    "services/worker-node"
+    "services/workers/node"
   ],
   "scripts": {
     "predev:web": "npm run build:packages",
@@ -35,11 +34,11 @@
     "build": "npm run build:packages && npm run build:services && npm run build:web && npm run build:desktop && npm run build:mobile",
     "package:desktop:win": "npm run build:packages && npm run build:web && npm run build:desktop && electron-builder --win nsis --x64 --config electron-builder.yml --publish never",
     "package:desktop:linux": "npm run build:packages && npm run build:web && npm run build:desktop && electron-builder --linux AppImage deb rpm --x64 --config electron-builder.yml --publish never",
-    "worker:kpi": "python services/worker-python/service/main.py --job kpi --input sample-data/online-retail.csv --output reports/kpi-analysis.json",
-    "worker:kpi:superstore": "python services/worker-python/service/main.py --job kpi --input sample-data/real/superstore-sales/train.csv --output reports/superstore-kpi-analysis.json",
-    "worker:kpi:online-retail": "python services/worker-python/service/main.py --job kpi --input \"sample-data/real/online-retail/Online Retail.xlsx\" --output reports/online-retail-kpi-analysis.json",
-    "worker:trend": "python services/worker-python/service/main.py --job trend --input sample-data/superstore-sales.csv --output reports/trend-analysis.json",
-    "worker:report": "python services/worker-python/service/main.py --job report --input sample-data/online-retail.csv --output reports/executive-summary.html",
+    "worker:kpi": "python services/workers/python/service/main.py --job kpi --input data/sample/online-retail.csv --output reports/kpi-analysis.json",
+    "worker:kpi:superstore": "python services/workers/python/service/main.py --job kpi --input data/sample/real/superstore-sales/train.csv --output reports/superstore-kpi-analysis.json",
+    "worker:kpi:online-retail": "python services/workers/python/service/main.py --job kpi --input \"data/sample/real/online-retail/Online Retail.xlsx\" --output reports/online-retail-kpi-analysis.json",
+    "worker:trend": "python services/workers/python/service/main.py --job trend --input data/sample/superstore-sales.csv --output reports/trend-analysis.json",
+    "worker:report": "python services/workers/python/service/main.py --job report --input data/sample/online-retail.csv --output reports/executive-summary.html",
     "worker:node:import": "npm --workspace @enterprise-analytics/worker-node run demo:import",
     "worker:node:validate": "npm --workspace @enterprise-analytics/worker-node run demo:validate",
     "worker:node:email": "npm --workspace @enterprise-analytics/worker-node run demo:email",

@@ -20,8 +20,8 @@ repository.seedDemoWorkspace();
 
 type CountRow = { count: number };
 
-const openApiPath = join(repoRoot, "services/worker-api-contract/openapi.json");
-const sampleDataPath = join(repoRoot, "sample-data");
+const openApiPath = join(repoRoot, "packages/contracts/openapi.json");
+const sampleDataPath = join(repoRoot, "data/sample");
 
 function setCorsHeaders(response: ServerResponse) {
   response.setHeader("Access-Control-Allow-Origin", "*");

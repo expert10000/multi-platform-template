@@ -63,7 +63,7 @@
 
 		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
-		<MauiAsset Include="..\..\services\worker-api-contract\examples\dashboard-snapshot.json" LogicalName="dashboard-snapshot.json" />
+		<MauiAsset Include="..\..\packages\contracts\examples\dashboard-snapshot.json" LogicalName="dashboard-snapshot.json" />
 	</ItemGroup>
 
 	<ItemGroup>

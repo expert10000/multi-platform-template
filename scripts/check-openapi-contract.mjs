@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 
-const specPath = new URL("../services/worker-api-contract/openapi.json", import.meta.url);
-const examplePath = new URL("../services/worker-api-contract/examples/dashboard-snapshot.json", import.meta.url);
+const specPath = new URL("../packages/contracts/openapi.json", import.meta.url);
+const examplePath = new URL("../packages/contracts/examples/dashboard-snapshot.json", import.meta.url);
 
 const spec = JSON.parse(await readFile(specPath, "utf8"));
 const example = JSON.parse(await readFile(examplePath, "utf8"));

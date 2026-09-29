@@ -22,8 +22,8 @@ Responsibilities:
 
 Contract source:
 
-- `services/worker-api-contract/openapi.json`
-- `services/worker-api-contract/examples/dashboard-snapshot.json`
+- `packages/contracts/openapi.json`
+- `packages/contracts/examples/dashboard-snapshot.json`
 
 The MAUI project starts or calls the local workspace server first. It also bundles the dashboard snapshot as a raw fallback asset and deserializes it into C# records under `apps/maui/Contracts`. This keeps MAUI independent from TypeScript internals while still displaying the same model shape as the web and desktop apps.
 

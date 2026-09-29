@@ -127,7 +127,7 @@ function resolveWorkspacePath(path: string): string {
     return path;
   }
 
-  return resolve(fileURLToPath(new URL("../../..", import.meta.url)), path);
+  return resolve(fileURLToPath(new URL("../../../..", import.meta.url)), path);
 }
 
 function normalizeSeverity(value: unknown): NotificationDraft["severity"] {
