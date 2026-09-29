@@ -8,7 +8,7 @@ The same React interface runs in a browser and inside Electron, while .NET MAUI 
 
 The source tree follows those responsibilities: `apps` contains the hosts, `packages` holds shared code and contracts, and `services` contains the workspace server and workers. Sample data, documentation, deployment files, scripts, and tests have their own top-level directories.
 
-![Recommended repository structure diagram](docs/images/Z30.png)
+![Recommended repository structure diagram](docs/images/repos.png)
 
 It keeps the same practical boundaries:
 
