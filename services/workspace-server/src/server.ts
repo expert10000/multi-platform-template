@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { openWorkspaceDatabase, SqliteWorkspaceRepository } from "@enterprise-analytics/workspace";
 
 const host = process.env.HOST ?? "127.0.0.1";
-const port = Number(process.env.PORT ?? "8787");
+const port = Number(process.env.PORT ?? "8797");
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "../../..");
 const defaultDatabasePath = resolve(__dirname, "../../../.workspace/workspace.sqlite3");
@@ -207,7 +207,7 @@ function writeStatusPage(response: ServerResponse) {
       <a href="/openapi.json">OpenAPI JSON</a>
     </nav>
     <nav class="links launch-links" aria-label="Launch apps">
-      <a href="http://127.0.0.1:5174/">Open Enterprise Platform Web</a>
+      <a href="http://127.0.0.1:5184/">Open Enterprise Platform Web</a>
       <a href="/launch/web">Start Enterprise Platform Web</a>
       <a href="/launch/desktop">Open Enterprise Platform</a>
       <a href="/launch/maui">Open MAUI</a>
@@ -424,7 +424,7 @@ function launchWebDevServer() {
 function launchTarget(target: "web" | "desktop" | "maui" | "mobile") {
   if (target === "web") {
     launchWebDevServer();
-    openUrl("http://127.0.0.1:5174/");
+    openUrl("http://127.0.0.1:5184/");
     return "Enterprise Platform Web launch requested and browser open requested.";
   }
 
@@ -433,7 +433,7 @@ function launchTarget(target: "web" | "desktop" | "maui" | "mobile") {
     const electronPath = join(repoRoot, "apps/desktop/node_modules/electron/dist/electron.exe");
     if (process.platform === "win32" && existsSync(electronPath)) {
       runDetached(electronPath, ["."], false, join(repoRoot, "apps/desktop"), {
-        ANALYTICS_WEB_URL: "http://127.0.0.1:5174"
+        ANALYTICS_WEB_URL: "http://127.0.0.1:5184"
       });
     } else {
       runDetached(process.platform === "win32" ? "npm.cmd" : "npm", ["--workspace", "@enterprise-analytics/desktop", "run", "electron:dev"]);

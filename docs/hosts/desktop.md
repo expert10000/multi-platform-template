@@ -14,7 +14,7 @@ Runtime path:
 Electron main
   -> workspace server
   -> React dashboard
-  -> HTTP localhost:8787
+  -> HTTP localhost:8797
   -> SQLite database
 ```
 

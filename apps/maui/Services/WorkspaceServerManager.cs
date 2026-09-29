@@ -4,7 +4,7 @@ namespace EnterpriseAnalytics.Maui.Services;
 
 public sealed class WorkspaceServerManager
 {
-	private static readonly Uri HealthEndpoint = new("http://127.0.0.1:8787/health");
+	private static readonly Uri HealthEndpoint = new("http://127.0.0.1:8797/health");
 	private Process? serverProcess;
 
 	public async Task<bool> EnsureStartedAsync(CancellationToken cancellationToken = default)
@@ -33,7 +33,7 @@ public sealed class WorkspaceServerManager
 			CreateNoWindow = true
 		};
 		startInfo.Environment["HOST"] = "127.0.0.1";
-		startInfo.Environment["PORT"] = "8787";
+		startInfo.Environment["PORT"] = "8797";
 		if (databasePath is not null)
 		{
 			startInfo.Environment["WORKSPACE_DB_PATH"] = databasePath;

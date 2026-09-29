@@ -15,7 +15,7 @@ Responsibilities:
 - project, dataset, job, and report overview
 - KPI cards
 - C# DTOs aligned with the OpenAPI dashboard contract
-- HTTP client for `http://127.0.0.1:8787/api/dashboard/snapshot`
+- HTTP client for `http://127.0.0.1:8797/api/dashboard/snapshot`
 - starts the local workspace server in development when it is not already running
 - status badge for SQLite API data versus local fallback data
 - future bridge to backend APIs, offline storage, or native file pickers

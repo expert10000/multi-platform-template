@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 let mainWindow: BrowserWindow | null = null;
 let workspaceServerProcess: ChildProcess | null = null;
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const workspaceServerUrl = process.env.ANALYTICS_WORKSPACE_SERVER_URL ?? "http://127.0.0.1:8787";
+const workspaceServerUrl = process.env.ANALYTICS_WORKSPACE_SERVER_URL ?? "http://127.0.0.1:8797";
 const repoRoot = join(__dirname, "../../..");
 
 async function isWorkspaceServerAvailable() {
@@ -78,7 +78,7 @@ async function ensureWorkspaceServer() {
     env: {
       ...process.env,
       HOST: "127.0.0.1",
-      PORT: "8787",
+      PORT: "8797",
       WORKSPACE_DB_PATH: process.env.WORKSPACE_DB_PATH ?? (app.isPackaged ? join(app.getPath("userData"), "workspace.sqlite3") : join(repoRoot, ".workspace", "workspace.sqlite3"))
     },
     stdio: "ignore",
@@ -114,7 +114,7 @@ async function createMainWindow() {
     if (existsSync(webIndexPath)) {
       await mainWindow.loadFile(webIndexPath, { query: { host: "desktop" } });
     } else {
-      await mainWindow.loadURL("http://127.0.0.1:5174/?host=desktop");
+      await mainWindow.loadURL("http://127.0.0.1:5184/?host=desktop");
     }
   }
 }

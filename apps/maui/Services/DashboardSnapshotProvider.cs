@@ -6,7 +6,7 @@ namespace EnterpriseAnalytics.Maui.Services;
 
 public sealed class DashboardSnapshotProvider
 {
-	private static readonly Uri DashboardEndpoint = new("http://127.0.0.1:8787/api/dashboard/snapshot");
+	private static readonly Uri DashboardEndpoint = new("http://127.0.0.1:8797/api/dashboard/snapshot");
 	private readonly WorkspaceServerManager workspaceServerManager = new();
 	private static readonly JsonSerializerOptions JsonOptions = new()
 	{

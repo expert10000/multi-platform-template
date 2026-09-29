@@ -29,7 +29,7 @@ The dashboard schema mirrors the main TypeScript domain model in `packages/domai
 
 The MAUI app does not import TypeScript code. Instead, it defines C# records in `apps/maui/Contracts` that match the OpenAPI dashboard schema.
 
-For the starter template, MAUI calls `http://127.0.0.1:8787/api/dashboard/snapshot` and falls back to the bundled `dashboard-snapshot.json` raw asset when the local server is offline. Later, the same records can be generated from OpenAPI.
+For the starter template, MAUI calls `http://127.0.0.1:8797/api/dashboard/snapshot` and falls back to the bundled `dashboard-snapshot.json` raw asset when the local server is offline. Later, the same records can be generated from OpenAPI.
 
 ## Validation
 

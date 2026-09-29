@@ -95,7 +95,7 @@ The starter contract includes:
 - `POST /worker/jobs` for Python and Node worker requests.
 - schema definitions for projects, datasets, jobs, reports, KPIs, and worker assets.
 
-The workspace server exposes the contract at `http://127.0.0.1:8787/api`. The MAUI app calls that server first and falls back to the bundled dashboard snapshot only when the server is offline.
+The workspace server exposes the contract at `http://127.0.0.1:8797/api`. The MAUI app calls that server first and falls back to the bundled dashboard snapshot only when the server is offline.
 
 ## Worker Split
 

@@ -1,6 +1,6 @@
 import { demoDashboardSnapshot, type DashboardSnapshot } from "@enterprise-analytics/core";
 
-const defaultApiBaseUrl = "http://127.0.0.1:8787/api";
+const defaultApiBaseUrl = "http://127.0.0.1:8797/api";
 
 export type DashboardDataSource = "sqlite" | "local";
 

@@ -7,7 +7,7 @@ It exposes the shared OpenAPI contract over HTTP and keeps SQLite behind a repos
 ## Default Runtime
 
 ```text
-http://127.0.0.1:8787
+http://127.0.0.1:8797
 ```
 
 Current endpoints:
@@ -25,7 +25,7 @@ React Web
 Electron Shell
 .NET MAUI
 Mobile
-  -> HTTP localhost:8787
+  -> HTTP localhost:8797
   -> workspace server
   -> packages/workspace repository
   -> SQLite

@@ -157,7 +157,7 @@ Platform apps use the same local HTTP contract:
 
 ```text
 Web / Electron / MAUI / Mobile
-  -> http://127.0.0.1:8787
+  -> http://127.0.0.1:8797
   -> packages/workspace repository
   -> SQLite
 ```
