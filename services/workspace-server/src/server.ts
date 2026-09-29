@@ -146,43 +146,44 @@ function writeStatusPage(response: ServerResponse) {
   <style>
     :root { color: #17202a; background: #f4f6f3; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     * { box-sizing: border-box; }
-    body { margin: 0; padding: 24px; }
-    main { width: min(1180px, 100%); margin: 0 auto; padding: 28px; background: #fff; border: 1px solid #dfe5df; border-radius: 12px; }
+    body { margin: 0; padding: 12px; }
+    main { width: min(1180px, 100%); margin: 0 auto; padding: 18px; background: #fff; border: 1px solid #dfe5df; border-radius: 12px; }
     h1, h2, h3, p { margin-top: 0; }
-    h1 { margin-bottom: 6px; font-size: 1.7rem; }
-    h2 { margin-bottom: 6px; font-size: 1.15rem; }
+    h1 { margin-bottom: 4px; font-size: 1.5rem; }
+    h2 { margin-bottom: 4px; font-size: 1.1rem; }
     h3 { margin-bottom: 0; font-size: 1rem; }
-    p { color: #526159; line-height: 1.5; }
-    section { margin-top: 30px; }
-    .top, .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+    p { color: #526159; line-height: 1.4; }
+    .top p { margin-bottom: 0; }
+    section { margin-top: 18px; }
+    .top, .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
     .badge, .tag, .state { display: inline-flex; align-items: center; border-radius: 999px; font-size: 0.8rem; font-weight: 800; white-space: nowrap; }
-    .badge { padding: 8px 12px; color: #0f3f2c; background: #d5f1df; border: 1px solid #83c99e; }
+    .badge { padding: 6px 10px; color: #0f3f2c; background: #d5f1df; border: 1px solid #83c99e; }
     .tag { padding: 4px 9px; color: #385667; background: #e9f3f8; }
     .state { padding: 4px 9px; }
     .state.ok { color: #0f5932; background: #dcf3e3; }
     .state.bad { color: #8f2f25; background: #ffe6e1; }
     .state.pending { color: #77550c; background: #fff1ca; }
-    .database { margin-top: 14px; padding: 12px 14px; background: #f7f9f7; border: 1px solid #e1e7e1; border-radius: 8px; }
-    .database strong { display: block; margin-bottom: 4px; font-size: 0.8rem; text-transform: uppercase; color: #526159; }
+    .database { margin-top: 10px; padding: 8px 10px; background: #f7f9f7; border: 1px solid #e1e7e1; border-radius: 8px; }
+    .database strong { display: inline; margin-right: 8px; font-size: 0.8rem; text-transform: uppercase; color: #526159; }
     .database code { overflow-wrap: anywhere; }
-    .section-intro { margin-bottom: 16px; }
-    .app-grid, .metric-grid, .status-grid, .tool-grid { display: grid; gap: 12px; }
+    .section-intro { margin-bottom: 10px; }
+    .app-grid, .metric-grid, .status-grid, .tool-grid { display: grid; gap: 8px; }
     .app-grid, .status-grid, .tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; }
-    .card { min-width: 0; padding: 16px; border: 1px solid #dfe5df; border-radius: 10px; }
-    .card p { margin: 9px 0 0; font-size: 0.9rem; }
-    .command { display: block; margin-top: 10px; font-size: 0.83rem; color: #526159; }
+    .card { min-width: 0; padding: 11px 12px; border: 1px solid #dfe5df; border-radius: 10px; }
+    .card p { margin: 5px 0 0; font-size: 0.85rem; line-height: 1.35; }
+    .command { display: block; margin-top: 6px; font-size: 0.8rem; color: #526159; }
     code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
-    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-    a.action { display: inline-flex; min-height: 36px; align-items: center; padding: 6px 11px; border: 1px solid #9bc9da; border-radius: 7px; color: #123c4d; background: #d7edf5; font-size: 0.88rem; font-weight: 800; text-decoration: none; }
+    .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    a.action { display: inline-flex; min-height: 32px; align-items: center; padding: 5px 9px; border: 1px solid #9bc9da; border-radius: 7px; color: #123c4d; background: #d7edf5; font-size: 0.85rem; font-weight: 800; text-decoration: none; }
     a.action:hover { background: #c1e2ee; }
     a.action.danger { color: #67261d; background: #ffe0da; border-color: #e9a59a; }
     .metric dt { color: #526159; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; }
-    .metric dd { margin: 5px 0; font-size: 1.55rem; font-weight: 800; }
+    .metric dd { margin: 2px 0; font-size: 1.4rem; font-weight: 800; }
     .tool a { color: #123c4d; font-weight: 800; }
-    .note { padding: 12px 14px; border-radius: 8px; background: #fff8e9; border: 1px solid #f2dbad; }
-    @media (max-width: 760px) { .app-grid, .metric-grid, .status-grid, .tool-grid { grid-template-columns: 1fr; } .top { flex-direction: column; } }
-    @media (max-width: 520px) { body { padding: 10px; } main { padding: 18px; } }
+    .note { padding: 8px 10px; border-radius: 8px; background: #fff8e9; border: 1px solid #f2dbad; }
+    @media (max-width: 760px) { .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 520px) { body { padding: 8px; } main { padding: 12px; } .app-grid, .metric-grid, .status-grid, .tool-grid { grid-template-columns: 1fr; } .top { flex-direction: column; } }
   </style>
 </head>
 <body>
