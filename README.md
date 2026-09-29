@@ -2,6 +2,10 @@
 
 This repository is a template for building desktop, web, mobile, service, and worker applications from a shared platform core. Instead of duplicating business logic for each application, the architecture shares the domain model, repository abstractions, service layer, OpenAPI contracts, worker protocols, and deployment strategy across every host.
 
+## Platform Architecture
+
+![Application hosts, contracts, services, and workers architecture](docs/images/Z100.jpg)
+
 ## Repository Layout
 
 ![Recommended repository structure diagram](docs/images/Z30.png)
@@ -23,10 +27,6 @@ It keeps the same practical boundaries:
 - `data/sample/real` - larger real-world retail datasets extracted from user-provided archives.
 - `docker` - containerized worker/runtime entrypoints.
 - `docs` - architecture and platform notes.
-
-## Platform Architecture
-
-![Application hosts, contracts, services, and workers architecture](docs/images/Z100.jpg)
 
 ## Platform Stack
 
