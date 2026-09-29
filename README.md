@@ -2,6 +2,10 @@
 
 This repository is a template for building desktop, web, mobile, service, and worker applications from a shared platform core. Instead of duplicating business logic for each application, the architecture shares the domain model, repository abstractions, service layer, OpenAPI contracts, worker protocols, and deployment strategy across every host.
 
+## Repository Layout
+
+![Recommended repository structure diagram](docs/images/Z30.png)
+
 It keeps the same practical boundaries:
 
 - `apps/desktop` - Electron shell that loads the web UI and starts the local workspace server.
@@ -20,19 +24,7 @@ It keeps the same practical boundaries:
 - `docker` - containerized worker/runtime entrypoints.
 - `docs` - architecture and platform notes.
 
-## Architecture Diagrams
-
-The first repository diagram shows the current folder layout. The second is an earlier conceptual overview whose paths differ in places; use the directory list above for current paths.
-
-### Repository Layout
-
-![Recommended repository structure diagram](docs/images/Z30.png)
-
-### Earlier Repository Overview (Conceptual)
-
-![Multi-platform template repository overview](docs/images/Z50.jpg)
-
-### Platform Architecture
+## Platform Architecture
 
 ![Application hosts, contracts, services, and workers architecture](docs/images/Z100.jpg)
 
