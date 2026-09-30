@@ -1,5 +1,6 @@
-import { BarChart3, BriefcaseBusiness, Database, FileText, Play, Search, Settings, TableProperties } from "lucide-react";
+import { BarChart3, BriefcaseBusiness, ChevronDown, Database, ExternalLink, FileText, Folder, Play, Search, Settings2, TableProperties } from "lucide-react";
 import { useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import { demoDashboardSnapshot, formatCurrency, formatPercent, type DashboardSnapshot } from "@enterprise-analytics/core";
 import { DataTable, MetricCard, StatusBadge } from "@enterprise-analytics/ui";
 import { getDashboardSnapshot, type DashboardDataSource } from "./workspaceApi";
@@ -7,18 +8,24 @@ import { getDashboardSnapshot, type DashboardDataSource } from "./workspaceApi";
 type WorkspaceView = "dashboard" | "datasets" | "jobs" | "reports";
 
 const viewTitles: Record<WorkspaceView, string> = {
-  dashboard: "Enterprise Platform Web",
+  dashboard: "Enterprise Platform",
   datasets: "Datasets",
   jobs: "Python Worker",
   reports: "Reports"
 };
 
-function getPlatformName() {
-  if (new URLSearchParams(window.location.search).get("host") === "desktop") {
-    return "Enterprise Platform";
-  }
-
-  return "Enterprise Platform Web";
+function DashboardCountCard({ label, value, detail, tone, icon }: { label: string; value: number; detail: string; tone: string; icon: ReactNode }) {
+  return (
+    <section className={`dashboard-count dashboard-count--${tone}`}>
+      <span className="dashboard-count__icon" aria-hidden="true">{icon}</span>
+      <div className="dashboard-count__copy">
+        <span className="dashboard-count__label">{label}</span>
+        <strong className="dashboard-count__value">{value}</strong>
+        <span className="dashboard-count__detail">{detail}</span>
+      </div>
+      <svg className="dashboard-count__wave" viewBox="0 0 140 74" preserveAspectRatio="none" aria-hidden="true"><path d="M0 74 C23 63 28 41 51 42 S79 51 96 29 S124 0 140 6 L140 74 Z" /></svg>
+    </section>
+  );
 }
 
 function jobTone(status: string) {
@@ -39,7 +46,6 @@ export function App() {
   const [dataSource, setDataSource] = useState<DashboardDataSource>("local");
   const [dataStatus, setDataStatus] = useState("Starting API");
   const [activeView, setActiveView] = useState<WorkspaceView>("dashboard");
-  const [platformName] = useState(getPlatformName);
 
   useEffect(() => {
     void getDashboardSnapshot().then((result) => {
@@ -147,12 +153,16 @@ export function App() {
 
   return (
     <main className="workspace-shell">
-      <aside className="sidebar">
-        <div className="brand-lockup">
-          <div className="brand-mark">EP</div>
-          <div>
-            <strong>{platformName}</strong>
-            <span>{platformName === "Enterprise Platform" ? "Desktop" : "Browser"}</span>
+      <header className="app-header">
+        <div className="app-header__top">
+          <div className="brand-lockup">
+            <div className="brand-mark">EP</div>
+            <strong>Enterprise Platform</strong>
+          </div>
+          <div className="app-header__actions">
+            <a className="monitor-link" href="http://127.0.0.1:8797/" target="_blank" rel="noopener noreferrer">Workspace Monitor <ExternalLink aria-hidden="true" size={14} /></a>
+            <span className="demo-avatar" title="Demo profile">JD</span>
+            <ChevronDown aria-hidden="true" size={16} />
           </div>
         </div>
         <nav className="primary-nav" aria-label="Primary navigation">
@@ -173,25 +183,18 @@ export function App() {
             Reports
           </button>
         </nav>
-        <button className="icon-button" type="button" title="Workspace settings" aria-label="Workspace settings">
-          <Settings aria-hidden="true" size={18} />
-        </button>
-      </aside>
+      </header>
 
       <section className="workspace-main">
-        <nav className="surface-tabs" aria-label="Platform views">
-          <a className="surface-tabs__item surface-tabs__item--active" href="/" aria-current="page">React Web</a>
-          <a className="surface-tabs__item" href="http://127.0.0.1:8797/" target="_blank" rel="noopener noreferrer">Workspace Monitor ↗</a>
-        </nav>
         <header className="topbar">
           <div>
-            <h1>{activeView === "dashboard" ? platformName : viewTitles[activeView]}</h1>
+            <h1>{viewTitles[activeView]}</h1>
+            <p>{activeView === "dashboard" ? "Turn your data into insights, anywhere." : "Explore your shared workspace data."}</p>
           </div>
           <div className="topbar__tools">
-            <span className={`data-source-badge data-source-badge--${dataSource}`}>{dataStatus}</span>
             <label className="search-box">
               <Search aria-hidden="true" size={18} />
-              <input placeholder="Search projects, datasets, jobs" />
+              <input aria-label="Search projects, datasets, jobs" placeholder="Search projects, datasets, jobs..." />
             </label>
           </div>
         </header>
@@ -199,10 +202,10 @@ export function App() {
         {activeView === "dashboard" ? (
           <>
             <section className="count-grid" aria-label="Workspace totals">
-              <MetricCard label="Projects" value={String(dashboard.counts.projects)} detail="active workspaces" />
-              <MetricCard label="Datasets" value={String(dashboard.counts.datasets)} detail="CSV and Excel assets" />
-              <MetricCard label="Jobs" value={String(dashboard.counts.jobs)} detail="analysis runs" />
-              <MetricCard label="Reports" value={String(dashboard.counts.reports)} detail="published outputs" />
+              <DashboardCountCard label="Projects" value={dashboard.counts.projects} detail="active workspaces" tone="blue" icon={<Folder size={29} strokeWidth={2.4} />} />
+              <DashboardCountCard label="Datasets" value={dashboard.counts.datasets} detail="CSV and Excel assets" tone="green" icon={<Database size={29} strokeWidth={2.4} />} />
+              <DashboardCountCard label="Jobs" value={dashboard.counts.jobs} detail="analysis runs" tone="purple" icon={<Settings2 size={29} strokeWidth={2.4} />} />
+              <DashboardCountCard label="Reports" value={dashboard.counts.reports} detail="published outputs" tone="orange" icon={<FileText size={29} strokeWidth={2.4} />} />
             </section>
 
             <section className="kpi-strip">
@@ -210,6 +213,8 @@ export function App() {
               <MetricCard label="Profit" value={formatCurrency(dashboard.kpis.profit)} detail={`${formatPercent(dashboard.kpis.margin)} margin`} trend="up" />
               <MetricCard label="Growth" value={formatPercent(dashboard.kpis.growth)} detail="period over period" trend="up" />
             </section>
+
+            <p className={`source-note source-note--${dataSource}`}><span aria-hidden="true" />{dataStatus}</p>
 
             <section className="workspace-grid">
               {renderDatasetPanel()}
