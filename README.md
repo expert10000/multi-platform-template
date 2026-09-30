@@ -40,9 +40,9 @@ At [127.0.0.1:5184](http://127.0.0.1:5184/), the React app shows workspace count
 
 ### Workspace Monitor — local server
 
-At [127.0.0.1:8797](http://127.0.0.1:8797/), the monitor shows SQLite workspace counts, service health, and the available application hosts. Developer links and demo controls stay in an expandable section.
+At [127.0.0.1:8797](http://127.0.0.1:8797/), the monitor shows SQLite workspace counts, service state, and the available application hosts. Developer links and demo controls stay in an expandable section.
 
-![Workspace Monitor showing data counts, service health, and application hosts](docs/images/workspace-monitor.jpg)
+![Workspace Monitor showing data counts, service state, and application hosts](docs/images/workspace-monitor.jpg)
 
 The monitor is an operations view for the local Workspace Server. .NET MAUI has its own native window; the Expo/React Native starter currently uses bundled demo data.
 

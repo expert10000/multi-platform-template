@@ -212,7 +212,7 @@ function writeStatusPage(response: ServerResponse) {
         <div>
           <span class="eyebrow">Local platform service</span>
           <h1>Workspace Monitor</h1>
-          <p>Workspace data, service health, and connected application hosts in one place.</p>
+          <p>Workspace data, service state, and connected application hosts in one place.</p>
         </div>
         <span class="badge">Server ${escapeHtml(status.status)}</span>
       </header>
@@ -226,7 +226,7 @@ function writeStatusPage(response: ServerResponse) {
       </section>
 
       <section aria-labelledby="status-title">
-        <h2 id="status-title">Service health</h2>
+        <h2 id="status-title">Service state</h2>
         <div class="status-grid">
           ${runtimeItems.map(({ label, state, tone }) => `<div class="status-item"><strong>${escapeHtml(label)}</strong><span class="state ${tone}">${escapeHtml(state)}</span></div>`).join("")}
         </div>
