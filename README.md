@@ -28,23 +28,23 @@ It keeps the same practical boundaries:
 - `docker` - containerized worker/runtime entrypoints.
 - `docs` - architecture and platform notes.
 
-## Two Browser Views
+## Application Preview
 
-Run `npm run dev:web` to start both views on separate ports. The tabs in either view open the other in a new browser tab.
+Run `npm install` and then `npm run dev:web` from the repository root. This starts the React app and the local Workspace Server on separate ports. Each view links to the other and opens it in a new browser tab.
 
 ### React Web — application dashboard
 
-At [127.0.0.1:5184](http://127.0.0.1:5184/), the React app shows workspace counts, analytics, datasets, jobs, and reports. Electron uses the same interface in a desktop window.
+Open [React Web at 127.0.0.1:5184](http://127.0.0.1:5184/). The dashboard brings projects, datasets, jobs, and reports together with revenue, profit, and growth cards. The top navigation opens the dataset, job, and report views; the Workspace Monitor link opens the server view. Electron loads this same React interface in a desktop window.
 
 ![React Web dashboard showing workspace counts and analytics](docs/images/react-web.jpg)
 
 ### Workspace Monitor — local server
 
-At [127.0.0.1:8797](http://127.0.0.1:8797/), the monitor shows SQLite workspace counts, service state, and the available application hosts. Developer links and demo controls stay in an expandable section.
+Open [Workspace Monitor at 127.0.0.1:8797](http://127.0.0.1:8797/). It shows the local SQLite workspace counts, service state, and application hosts. The React Web, Electron, .NET MAUI, and React Native cards explain how to access each host; developer links and demo controls are in the expandable section.
 
 ![Workspace Monitor showing data counts, service state, and application hosts](docs/images/workspace-monitor.jpg)
 
-The monitor is an operations view for the local Workspace Server. .NET MAUI has its own native window; the Expo/React Native starter currently uses bundled demo data.
+The monitor is an operations view for the local Workspace Server. .NET MAUI has its own native window; the Expo/React Native starter currently uses bundled demo data. The screenshots show the seeded example workspace, so counts may differ after you add data.
 
 ## Platform Stack
 
