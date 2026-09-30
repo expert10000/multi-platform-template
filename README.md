@@ -2,7 +2,7 @@
 
 This repository is a template for building desktop, web, mobile, service, and worker applications from a shared platform core. Instead of duplicating business logic for each application, the architecture shares the domain model, repository abstractions, service layer, OpenAPI contracts, worker protocols, and deployment strategy across every host.
 
-The same React interface runs in a browser and inside Electron, while .NET MAUI and React Native provide additional application hosts. The hosts use a shared HTTP and OpenAPI boundary to reach workspace data. Python and Node workers handle analytics and automation tasks.
+The same React interface runs in a browser and inside Electron, while .NET MAUI provides a separate native dashboard. Those three hosts use a shared HTTP and OpenAPI boundary to reach workspace data. The Expo/React Native mobile shell currently uses bundled demo data. Python and Node workers handle analytics and automation tasks.
 
 ![Application hosts, contracts, services, and workers architecture](docs/images/Z100.jpg)
 
@@ -27,6 +27,24 @@ It keeps the same practical boundaries:
 - `data/sample/real` - larger real-world retail datasets extracted from user-provided archives.
 - `docker` - containerized worker/runtime entrypoints.
 - `docs` - architecture and platform notes.
+
+## Two Browser Views
+
+Run `npm run dev:web` to start both views on separate ports. The tabs in either view open the other in a new browser tab.
+
+### React Web — application dashboard
+
+At [127.0.0.1:5184](http://127.0.0.1:5184/), the React app shows workspace counts, analytics, datasets, jobs, and reports. Electron uses the same interface in a desktop window.
+
+![React Web dashboard showing workspace counts and analytics](docs/images/react-web.jpg)
+
+### Workspace Monitor — local server
+
+At [127.0.0.1:8797](http://127.0.0.1:8797/), the monitor shows SQLite workspace counts, service health, and the available application hosts. Developer links and demo controls stay in an expandable section.
+
+![Workspace Monitor showing data counts, service health, and application hosts](docs/images/workspace-monitor.jpg)
+
+The monitor is an operations view for the local Workspace Server. .NET MAUI has its own native window; the Expo/React Native starter currently uses bundled demo data.
 
 ## Platform Stack
 
@@ -156,11 +174,13 @@ CSV import
 Platform apps use the same local HTTP contract:
 
 ```text
-Web / Electron / MAUI / Mobile
+Web / Electron / MAUI
   -> http://127.0.0.1:8797
   -> packages/workspace repository
   -> SQLite
 ```
+
+The Expo/React Native starter uses the shared demo snapshot directly while its HTTP integration is pending.
 
 The starter UI shows:
 

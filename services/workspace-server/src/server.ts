@@ -144,124 +144,125 @@ function writeStatusPage(response: ServerResponse) {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Workspace Monitor</title>
   <style>
-    :root { color: #17202a; background: #f4f6f3; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    :root { color: #172a34; background: #edf2f1; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
     * { box-sizing: border-box; }
-    body { margin: 0; padding: 12px; }
-    main { width: min(1180px, 100%); margin: 0 auto; padding: 18px; background: #fff; border: 1px solid #dfe5df; border-radius: 12px; }
+    body { margin: 0; padding: 24px; }
+    main { width: min(1120px, 100%); margin: 0 auto; }
     h1, h2, h3, p { margin-top: 0; }
-    h1 { margin-bottom: 4px; font-size: 1.5rem; }
-    h2 { margin-bottom: 4px; font-size: 1.1rem; }
-    h3 { margin-bottom: 0; font-size: 1rem; }
-    p { color: #526159; line-height: 1.4; }
-    .top p { margin-bottom: 0; }
-    section { margin-top: 18px; }
-    .top, .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-    .badge, .tag, .state { display: inline-flex; align-items: center; border-radius: 999px; font-size: 0.8rem; font-weight: 800; white-space: nowrap; }
-    .badge { padding: 6px 10px; color: #0f3f2c; background: #d5f1df; border: 1px solid #83c99e; }
-    .tag { padding: 4px 9px; color: #385667; background: #e9f3f8; }
-    .state { padding: 4px 9px; }
-    .state.ok { color: #0f5932; background: #dcf3e3; }
-    .state.bad { color: #8f2f25; background: #ffe6e1; }
-    .state.pending { color: #77550c; background: #fff1ca; }
-    .database { margin-top: 10px; padding: 8px 10px; background: #f7f9f7; border: 1px solid #e1e7e1; border-radius: 8px; }
-    .database strong { display: inline; margin-right: 8px; font-size: 0.8rem; text-transform: uppercase; color: #526159; }
-    .database code { overflow-wrap: anywhere; }
-    .section-intro { margin-bottom: 10px; }
-    .app-grid, .metric-grid, .status-grid, .tool-grid { display: grid; gap: 8px; }
-    .app-grid, .status-grid, .tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; }
-    .card { min-width: 0; padding: 11px 12px; border: 1px solid #dfe5df; border-radius: 10px; }
-    .card p { margin: 5px 0 0; font-size: 0.85rem; line-height: 1.35; }
-    .command { display: block; margin-top: 6px; font-size: 0.8rem; color: #526159; }
+    h1 { margin-bottom: 8px; font-size: clamp(1.8rem, 3vw, 2.5rem); letter-spacing: -0.04em; }
+    h2 { margin-bottom: 12px; font-size: 1.1rem; letter-spacing: -0.02em; }
+    h3 { margin-bottom: 4px; font-size: 0.98rem; }
+    p { line-height: 1.45; }
+    a { color: inherit; }
     code { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
-    .actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
-    a.action { display: inline-flex; min-height: 32px; align-items: center; padding: 5px 9px; border: 1px solid #9bc9da; border-radius: 7px; color: #123c4d; background: #d7edf5; font-size: 0.85rem; font-weight: 800; text-decoration: none; }
-    a.action:hover { background: #c1e2ee; }
-    a.action.danger { color: #67261d; background: #ffe0da; border-color: #e9a59a; }
-    .metric dt { color: #526159; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; }
-    .metric dd { margin: 2px 0; font-size: 1.4rem; font-weight: 800; }
-    .tool a { color: #123c4d; font-weight: 800; }
-    .note { padding: 8px 10px; border-radius: 8px; background: #fff8e9; border: 1px solid #f2dbad; }
-    @media (max-width: 760px) { .metric-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 520px) { body { padding: 8px; } main { padding: 12px; } .app-grid, .metric-grid, .status-grid, .tool-grid { grid-template-columns: 1fr; } .top { flex-direction: column; } }
+    .surface-tabs { display: inline-flex; gap: 4px; margin-bottom: 12px; padding: 4px; background: #dce7e6; border: 1px solid #cbdad8; border-radius: 12px; }
+    .surface-tabs a { padding: 9px 16px; border-radius: 9px; color: #44616d; font-size: 0.88rem; font-weight: 800; text-decoration: none; }
+    .surface-tabs a:hover { color: #123b47; background: #eaf2f0; }
+    .surface-tabs a.active { color: #113c47; background: #fff; box-shadow: 0 2px 8px #203b411a; }
+    .shell { padding: 20px; background: #fff; border: 1px solid #d9e4e2; border-radius: 18px; box-shadow: 0 16px 45px #1b39410d; }
+    .hero { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 25px 28px; color: #fff; background: linear-gradient(115deg, #142b3c, #245563); border-radius: 14px; }
+    .hero p { max-width: 650px; margin: 0; color: #d8e8e9; }
+    .eyebrow { display: block; margin-bottom: 8px; color: #91d5c1; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.13em; text-transform: uppercase; }
+    .badge, .state, .tag { display: inline-flex; align-items: center; border-radius: 999px; white-space: nowrap; font-size: 0.76rem; font-weight: 800; }
+    .badge { gap: 7px; padding: 8px 12px; color: #dbffe8; background: #34745d; border: 1px solid #6bc296; }
+    .badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #a4f0ba; }
+    section { margin-top: 24px; }
+    .section-lead { margin: -5px 0 12px; color: #627780; font-size: 0.88rem; }
+    .metric-grid, .status-grid, .app-grid, .tool-grid { display: grid; gap: 10px; }
+    .metric-grid, .status-grid, .app-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .metric-grid { margin: 0; }
+    .metric, .status-item, .app-card { min-width: 0; padding: 16px; border: 1px solid #dce7e4; border-radius: 12px; background: #fff; }
+    .metric { background: #f8fbfa; }
+    .metric dt { color: #617881; font-size: 0.74rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+    .metric dd { margin: 5px 0 0; color: #143746; font-size: 2rem; font-weight: 800; line-height: 1; }
+    .status-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 14px; }
+    .status-item strong { font-size: 0.84rem; }
+    .state { padding: 5px 9px; }
+    .state.ok { color: #12613e; background: #dff6e9; }
+    .state.bad { color: #902f27; background: #ffe5e0; }
+    .state.pending { color: #795712; background: #fff0cb; }
+    .app-card { padding: 15px; }
+    .app-card p { min-height: 2.6em; margin: 0; color: #627780; font-size: 0.83rem; }
+    .tag { margin-bottom: 9px; padding: 4px 8px; color: #27717d; background: #e5f3f3; }
+    .app-card a { display: inline-block; margin-top: 10px; color: #166377; font-size: 0.83rem; font-weight: 800; text-decoration: none; }
+    .app-card a:hover, .tool-grid a:hover { text-decoration: underline; }
+    details { margin-top: 25px; padding: 0 16px; border: 1px solid #dce7e4; border-radius: 12px; background: #f8fbfa; }
+    summary { padding: 15px 0; color: #264b58; font-size: 0.92rem; font-weight: 800; cursor: pointer; }
+    .technical { padding: 0 0 18px; }
+    .technical p { color: #627780; font-size: 0.85rem; }
+    .database { padding: 10px 12px; background: #fff; border: 1px solid #dce7e4; border-radius: 8px; overflow-wrap: anywhere; }
+    .database strong { display: block; margin-bottom: 4px; color: #617881; font-size: 0.72rem; text-transform: uppercase; }
+    .tool-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .tool-grid a { padding: 10px 12px; color: #166377; background: #fff; border: 1px solid #dce7e4; border-radius: 8px; font-size: 0.83rem; font-weight: 800; text-decoration: none; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .action { padding: 8px 11px; color: #135368; background: #e5f3f3; border-radius: 8px; font-size: 0.83rem; font-weight: 800; text-decoration: none; }
+    .action.danger { color: #84372d; background: #ffe6e0; }
+    @media (max-width: 920px) { .metric-grid, .status-grid, .app-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .tool-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 600px) { body { padding: 12px; } .shell { padding: 12px; } .hero { flex-direction: column; padding: 20px; } .metric-grid, .status-grid, .app-grid, .tool-grid { grid-template-columns: 1fr; } .app-card p { min-height: 0; } .surface-tabs { display: flex; } .surface-tabs a { flex: 1; text-align: center; padding: 9px 8px; } }
   </style>
 </head>
 <body>
   <main>
-    <div class="top">
-      <div>
-        <h1>Workspace Server</h1>
-        <p>This is the local API and data monitor. The applications below are separate hosts that use workspace data.</p>
-      </div>
-      <span class="badge">Server ${escapeHtml(status.status)}</span>
+    <nav class="surface-tabs" aria-label="Platform views">
+      <a href="http://127.0.0.1:5184/" target="_blank" rel="noopener noreferrer">React Web</a>
+      <a class="active" href="/" aria-current="page">Workspace Monitor</a>
+    </nav>
+    <div class="shell">
+      <header class="hero">
+        <div>
+          <span class="eyebrow">Local platform service</span>
+          <h1>Workspace Monitor</h1>
+          <p>Workspace data, service health, and connected application hosts in one place.</p>
+        </div>
+        <span class="badge">Server ${escapeHtml(status.status)}</span>
+      </header>
+
+      <section aria-labelledby="data-title">
+        <h2 id="data-title">Workspace data</h2>
+        <p class="section-lead">Records stored in the local SQLite workspace.</p>
+        <dl class="metric-grid">
+          ${metrics.slice(0, 4).map(({ label, value }) => `<div class="metric"><dt>${escapeHtml(label)}</dt><dd>${value}</dd></div>`).join("")}
+        </dl>
+      </section>
+
+      <section aria-labelledby="status-title">
+        <h2 id="status-title">Service health</h2>
+        <div class="status-grid">
+          ${runtimeItems.map(({ label, state, tone }) => `<div class="status-item"><strong>${escapeHtml(label)}</strong><span class="state ${tone}">${escapeHtml(state)}</span></div>`).join("")}
+        </div>
+      </section>
+
+      <section aria-labelledby="apps-title">
+        <h2 id="apps-title">Application hosts</h2>
+        <div class="app-grid">
+          <article class="app-card"><span class="tag">Browser</span><h3>React Web</h3><p>Analytics dashboard and workspace UI.</p><a href="http://127.0.0.1:5184/" target="_blank" rel="noopener noreferrer">Open Web ↗</a></article>
+          <article class="app-card"><span class="tag">Desktop</span><h3>Electron</h3><p>The same React UI in a desktop window.</p><a href="/launch/desktop">Launch Electron →</a></article>
+          <article class="app-card"><span class="tag">Native C#</span><h3>.NET MAUI</h3><p>A separate native dashboard.</p><a href="/launch/maui">Launch on Windows →</a></article>
+          <article class="app-card"><span class="tag">Expo</span><h3>React Native</h3><p>Mobile starter using demo data.</p></article>
+        </div>
+      </section>
+
+      <details>
+        <summary>Developer details and demo controls</summary>
+        <div class="technical">
+          <div class="database"><strong>SQLite database file</strong><code>${escapeHtml(status.databasePath)}</code></div>
+          <p>Users: ${metrics[4].value} · Sample files: ${metrics[5].value}. The worker job API is not wired yet; worker scripts run from the command line.</p>
+          <div class="tool-grid">
+            <a href="/api-docs">API endpoint guide ↗</a>
+            <a href="/swagger">OpenAPI route list ↗</a>
+            <a href="/database">Browse SQLite ↗</a>
+            <a href="/api/dashboard/snapshot">Dashboard JSON ↗</a>
+            <a href="/api/status">Server status JSON ↗</a>
+            <a href="/openapi.json">OpenAPI JSON ↗</a>
+          </div>
+          <p>Seed adds or updates example records. Reset deletes all workspace records in this database, then restores the built-in examples.</p>
+          <div class="actions">
+            <a class="action" href="/action/seed">Seed examples</a>
+            <a class="action danger" href="/action/reset-demo" onclick="return confirm('Delete all workspace records in this SQLite file, then restore the built-in examples?')">Reset to examples</a>
+          </div>
+        </div>
+      </details>
     </div>
-    <div class="database"><strong>SQLite database file</strong><code>${escapeHtml(status.databasePath)}</code></div>
-
-    <section aria-labelledby="apps-title">
-      <h2 id="apps-title">Applications in this repository</h2>
-      <p class="section-intro">Four application hosts are present. The workspace server on this page is their backend, not another user-facing app.</p>
-      <div class="app-grid">
-        <article class="card">
-          <div class="card-head"><h3>React Web</h3><span class="tag">Browser</span></div>
-          <p>Dashboard and workspace UI. It reads the SQLite-backed snapshot from this server, with bundled demo data as a fallback.</p>
-          <div class="actions"><a class="action" href="http://127.0.0.1:5184/">Open Web app</a></div>
-          <span class="command">Start locally: <code>npm run dev:web</code></span>
-        </article>
-        <article class="card">
-          <div class="card-head"><h3>Electron Desktop</h3><span class="tag">Desktop</span></div>
-          <p>Native window for the same React Web UI. It connects to the workspace server and can start it when needed.</p>
-          <div class="actions"><a class="action" href="/launch/desktop">Launch Electron</a></div>
-          <span class="command">Start locally: <code>npm run dev:desktop</code></span>
-        </article>
-        <article class="card">
-          <div class="card-head"><h3>.NET MAUI</h3><span class="tag">Native C#</span></div>
-          <p>Separate native dashboard using the same HTTP snapshot contract. This launch action targets Windows.</p>
-          <div class="actions"><a class="action" href="/launch/maui">Launch MAUI on Windows</a></div>
-          <span class="command">Start locally: <code>npm run dev:maui</code></span>
-        </article>
-        <article class="card">
-          <div class="card-head"><h3>React Native</h3><span class="tag">Expo</span></div>
-          <p>Mobile shell for Android and iOS. It currently shows shared demo data; server integration and launching from this page are not wired.</p>
-          <span class="command">Start locally: <code>npm run dev:mobile</code></span>
-        </article>
-      </div>
-    </section>
-
-    <section aria-labelledby="data-title">
-      <h2 id="data-title">Workspace data</h2>
-      <p class="section-intro">Counts are SQLite records except for sample files, which are counted on disk.</p>
-      <dl class="metric-grid">
-        ${metrics.map(({ label, value, detail }) => `<div class="card metric"><dt>${escapeHtml(label)}</dt><dd>${value}</dd><p>${escapeHtml(detail)}</p></div>`).join("")}
-      </dl>
-    </section>
-
-    <section aria-labelledby="status-title">
-      <h2 id="status-title">Service status</h2>
-      <div class="status-grid">
-        ${runtimeItems.map(({ label, state, detail, tone }) => `<div class="card"><div class="card-head"><h3>${escapeHtml(label)}</h3><span class="state ${tone}">${escapeHtml(state)}</span></div><p>${escapeHtml(detail)}</p></div>`).join("")}
-      </div>
-    </section>
-
-    <section aria-labelledby="tools-title">
-      <h2 id="tools-title">Inspect the server</h2>
-      <div class="tool-grid">
-        <div class="card tool"><a href="/api-docs">API endpoint guide</a><p>Methods and purposes for the local HTTP endpoints.</p></div>
-        <div class="card tool"><a href="/swagger">OpenAPI route list</a><p>Paths declared in the contract; this is not an interactive Swagger console.</p></div>
-        <div class="card tool"><a href="/database">Browse SQLite records</a><p>Shows the first five rows in each workspace table.</p></div>
-        <div class="card tool"><a href="/api/dashboard/snapshot">Dashboard JSON</a><p>The snapshot read by Web, Electron, and MAUI.</p></div>
-        <div class="card tool"><a href="/api/status">Server status JSON</a><p>Server state, storage type, and database path.</p></div>
-        <div class="card tool"><a href="/openapi.json">OpenAPI contract JSON</a><p>The machine-readable API and worker schema.</p></div>
-      </div>
-    </section>
-
-    <section aria-labelledby="demo-title">
-      <h2 id="demo-title">Demo data controls</h2>
-      <p class="note">Seed adds or updates the built-in example records by ID. Reset deletes every user, project, dataset, job, and report record in the SQLite file above, then restores the built-in examples.</p>
-      <div class="actions">
-        <a class="action" href="/action/seed">Seed example records</a>
-        <a class="action danger" href="/action/reset-demo" onclick="return confirm('Delete all workspace records in this SQLite file, then restore the built-in examples?')">Reset all records to examples</a>
-      </div>
-    </section>
   </main>
 </body>
 </html>`);

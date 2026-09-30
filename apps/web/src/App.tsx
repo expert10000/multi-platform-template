@@ -179,6 +179,10 @@ export function App() {
       </aside>
 
       <section className="workspace-main">
+        <nav className="surface-tabs" aria-label="Platform views">
+          <a className="surface-tabs__item surface-tabs__item--active" href="/" aria-current="page">React Web</a>
+          <a className="surface-tabs__item" href="http://127.0.0.1:8797/" target="_blank" rel="noopener noreferrer">Workspace Monitor ↗</a>
+        </nav>
         <header className="topbar">
           <div>
             <h1>{activeView === "dashboard" ? platformName : viewTitles[activeView]}</h1>
