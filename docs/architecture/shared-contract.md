@@ -21,7 +21,10 @@ This keeps each platform free to use its natural language and UI stack:
 The starter OpenAPI contract includes:
 
 - `GET /dashboard/snapshot` for projects, datasets, jobs, reports, and KPI cards.
-- `POST /worker/jobs` for worker execution requests.
+- `POST /datasets` for a UTF-8 CSV import.
+- `POST /worker/jobs` to queue a supported Python analytics job using `params.datasetId`.
+- `GET /jobs/{id}` to follow persisted job state and errors.
+- `GET /reports/{id}/content` to open generated JSON or HTML.
 
 The dashboard schema mirrors the main TypeScript domain model in `packages/domain`, while remaining neutral enough for C# clients.
 
@@ -29,7 +32,7 @@ The dashboard schema mirrors the main TypeScript domain model in `packages/domai
 
 The MAUI app does not import TypeScript code. Instead, it defines C# records in `apps/maui/Contracts` that match the OpenAPI dashboard schema.
 
-For the starter template, MAUI calls `http://127.0.0.1:8797/api/dashboard/snapshot` and falls back to the bundled `dashboard-snapshot.json` raw asset when the local server is offline. Later, the same records can be generated from OpenAPI.
+MAUI calls `http://127.0.0.1:8797/api/dashboard/snapshot` and falls back to the bundled `dashboard-snapshot.json` raw asset when the local server is offline. Its Windows shell can import a CSV, queue Python jobs, refresh progress, and open generated reports through that same API.
 
 ## Validation
 
@@ -39,4 +42,4 @@ Run:
 npm run check:openapi
 ```
 
-This verifies that the OpenAPI file and dashboard example are readable and include the required starter schemas.
+This checks required routes, validates the example against required schema fields, and compares OpenAPI property names with the TypeScript and C# dashboard DTOs. It detects contract drift without generating clients.

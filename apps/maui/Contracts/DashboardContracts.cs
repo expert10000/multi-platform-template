@@ -46,7 +46,9 @@ public sealed record JobDto(
 	string Status,
 	string RequestedBy,
 	DateTimeOffset CreatedAt,
-	DateTimeOffset? CompletedAt);
+	DateTimeOffset? CompletedAt,
+	string? ErrorMessage,
+	string? ResultPath);
 
 public sealed record ReportDto(
 	string Id,

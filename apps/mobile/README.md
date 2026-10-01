@@ -27,4 +27,6 @@ Open on iOS:
 npm --workspace @enterprise-analytics/mobile run ios
 ```
 
-The starter app uses the shared `@enterprise-analytics/core` dashboard snapshot. Later, it can call a web API or local sync layer instead of reading demo data directly.
+The app fetches `GET /api/dashboard/snapshot` from the Workspace Server and shows generated reports from that server. It uses the shared `@enterprise-analytics/core` snapshot only when the API is unreachable. Use the refresh button to retry.
+
+Android emulators use `http://10.0.2.2:8797/api` by default; iOS simulators use `http://127.0.0.1:8797/api`. For a physical device, set `EXPO_PUBLIC_WORKSPACE_API_URL` to a server URL reachable from that device before starting Expo. The Workspace Server has no authentication, so use a trusted development network for this configuration.

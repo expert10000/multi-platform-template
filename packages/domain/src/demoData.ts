@@ -96,9 +96,10 @@ export const demoDashboardSnapshot: DashboardSnapshot = {
       projectId: "project-sales-forecast-2026",
       datasetId: "dataset-sales-q1",
       kind: "trend-analysis",
-      status: "running",
+      status: "succeeded",
       requestedBy: "user-alex",
-      createdAt: now
+      createdAt: now,
+      completedAt: now
     }
   ],
   recentReports: [

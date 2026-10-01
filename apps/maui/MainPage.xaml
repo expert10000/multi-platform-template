@@ -37,6 +37,15 @@
                 </VerticalStackLayout>
             </Border>
 
+            <FlexLayout Wrap="Wrap" Direction="Row" AlignItems="Center">
+                <Button Text="Import CSV" Clicked="OnImportClicked" Margin="0,0,8,8" />
+                <Button Text="Run KPI" Clicked="OnRunKpiClicked" Margin="0,0,8,8" />
+                <Button Text="Generate HTML" Clicked="OnGenerateHtmlClicked" Margin="0,0,8,8" />
+                <Button Text="Open latest report" Clicked="OnOpenReportClicked" Margin="0,0,8,8" />
+                <Button Text="Refresh" Clicked="OnRefreshClicked" Margin="0,0,8,8" />
+            </FlexLayout>
+            <Label Text="{Binding ActionMessage}" TextColor="#36586D" FontSize="13" />
+
             <Grid ColumnDefinitions="*,*"
                   RowDefinitions="Auto,Auto"
                   ColumnSpacing="12"

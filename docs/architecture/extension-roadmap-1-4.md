@@ -1,10 +1,10 @@
 # Extension roadmap (1–4)
 
-This document freezes the next four areas of work for the multi-platform template. It is a plan, not a claim that these features are implemented. Keep the existing repository layout and current application hosts intact as the work progresses.
+This document records the four extension areas frozen on branch `1-4`. Branch `codex/implement-1-4` implements the example workflow and host integrations described below while retaining the existing repository layout. See the README for the current run and test instructions.
 
 ## First implementation slice
 
-Make one complete path work: import a CSV dataset in React Web, submit a KPI analysis job through the Workspace Server, follow its progress, and open the resulting report. Today the Web actions are display-only and `POST /api/worker/jobs` returns `501`; the Python and Node workers run through command-line entry points.
+Import a CSV dataset in React Web, submit a KPI analysis job through the Workspace Server, follow its progress, and open the resulting report. The same flow also supports trend analysis and HTML report generation through the Python worker. The Node worker retains its command-line entry points.
 
 ## 1. Dashboard interactions
 

@@ -27,7 +27,13 @@ Both should speak the same high-level shape:
 }
 ```
 
-Supported job kinds:
+The local Workspace Server currently queues these Python job kinds over HTTP when `params.datasetId` names an imported or sample sales dataset:
 
-- Python: `sales.kpi`, `sales.forecast`, `csv.process`, `report.pdf`
+- `sales.kpi` → JSON KPI report
+- `sales.forecast` → JSON trend and forecast report
+- `report.html` → browser-readable HTML report
+
+The wider worker protocol also names job kinds for future integrations and command-line worker use:
+
+- Python: `csv.process`, `report.pdf`
 - Node: `csv.import`, `data.validate`, `data.transform`, `notification.create`, `email.generate`

@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Globalization;
+using System.Net.Http.Json;
 using EnterpriseAnalytics.Maui.Contracts;
 using EnterpriseAnalytics.Maui.Services;
 
@@ -10,6 +11,10 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
 	private readonly DashboardSnapshotProvider dashboardProvider = new();
 	private IReadOnlyList<MetricCard> metrics = [];
 	private IReadOnlyList<ActivityItem> activity = [];
+	private DashboardSnapshot? currentSnapshot;
+	private const string ApiBaseUrl = "http://127.0.0.1:8797/api";
+	private string actionMessage = "Use the local Workspace Server to import and analyze a sales CSV.";
+	public string ActionMessage { get => actionMessage; private set { actionMessage = value; OnPropertyChanged(); } }
 
 	public string ProjectCount { get; private set; } = "--";
 	public string DatasetCount { get; private set; } = "--";
@@ -70,6 +75,7 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
 	private void ApplySnapshot(DashboardSnapshotLoadResult result)
 	{
 		var snapshot = result.Snapshot;
+		currentSnapshot = snapshot;
 		StatusText = result.StatusText;
 		StatusBackgroundColor = result.StatusBackgroundColor;
 		StatusTextColor = result.StatusTextColor;
@@ -102,6 +108,58 @@ public partial class MainPage : ContentPage, INotifyPropertyChanged
 			.. snapshot.RecentReports.Take(1).Select(report =>
 				new ActivityItem($"{report.Title} ready", report.OutputPath))
 		];
+	}
+
+	private async void OnRefreshClicked(object? sender, EventArgs e) => await LoadDashboardAsync();
+
+	private async void OnImportClicked(object? sender, EventArgs e)
+	{
+		try
+		{
+			var file = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Choose a sales CSV" });
+			if (file is null) return;
+			if (!file.FileName.EndsWith(".csv", StringComparison.OrdinalIgnoreCase)) { ActionMessage = "Choose a CSV file."; return; }
+			await using var stream = await file.OpenReadAsync();
+			using var reader = new StreamReader(stream);
+			var content = await reader.ReadToEndAsync();
+			using var client = new HttpClient();
+			var response = await client.PostAsJsonAsync($"{ApiBaseUrl}/datasets", new { filename = file.FileName, content });
+			if (!response.IsSuccessStatusCode) throw new InvalidOperationException(await response.Content.ReadAsStringAsync());
+			ActionMessage = $"Imported {file.FileName}.";
+			await LoadDashboardAsync();
+		}
+		catch (Exception ex) { ActionMessage = $"Import failed: {ex.Message}"; }
+	}
+
+	private async Task RunWorkerAsync(string kind)
+	{
+		var dataset = currentSnapshot?.RecentDatasets.FirstOrDefault(item => item.Kind == "sales" && item.SourcePath.StartsWith(".workspace/uploads/"))
+			?? currentSnapshot?.RecentDatasets.FirstOrDefault(item => item.Kind == "sales");
+		if (dataset is null) { ActionMessage = "Import a sales CSV first."; return; }
+		try
+		{
+			using var client = new HttpClient();
+			var request = new Dictionary<string, object?>
+			{
+				["id"] = Guid.NewGuid().ToString(), ["kind"] = kind, ["runtime"] = "python",
+				["requestedAt"] = DateTimeOffset.UtcNow.ToString("O"), ["params"] = new { datasetId = dataset.Id }
+			};
+			var response = await client.PostAsJsonAsync($"{ApiBaseUrl}/worker/jobs", request);
+			if (!response.IsSuccessStatusCode) throw new InvalidOperationException(await response.Content.ReadAsStringAsync());
+			ActionMessage = $"{kind} queued for {dataset.Name}. Refresh to follow progress.";
+			await LoadDashboardAsync();
+		}
+		catch (Exception ex) { ActionMessage = $"Job failed: {ex.Message}"; }
+	}
+
+	private async void OnRunKpiClicked(object? sender, EventArgs e) => await RunWorkerAsync("sales.kpi");
+	private async void OnGenerateHtmlClicked(object? sender, EventArgs e) => await RunWorkerAsync("report.html");
+
+	private async void OnOpenReportClicked(object? sender, EventArgs e)
+	{
+		var report = currentSnapshot?.RecentReports.FirstOrDefault(item => item.OutputPath.StartsWith(".workspace/reports/"));
+		if (report is null) { ActionMessage = "No generated report yet. Run a KPI or HTML job and refresh."; return; }
+		await Launcher.Default.OpenAsync(new Uri($"{ApiBaseUrl}/reports/{Uri.EscapeDataString(report.Id)}/content"));
 	}
 
 	private static string FormatCurrency(decimal value) =>

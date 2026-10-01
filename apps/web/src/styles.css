@@ -66,8 +66,10 @@ button { cursor: pointer; }
 }
 .dashboard-count {
   position: relative; display: flex; align-items: center; gap: 16px; min-width: 0;
-  min-height: 116px; padding: 16px; overflow: hidden;
+  min-height: 116px; padding: 16px; overflow: hidden; text-align: left; cursor: pointer;
 }
+.dashboard-count:hover { border-color: var(--tone); transform: translateY(-1px); }
+.dashboard-count:focus-visible, .primary-nav__item:focus-visible, .command-button:focus-visible { outline: 3px solid #2385cb; outline-offset: 2px; }
 .dashboard-count__icon {
   z-index: 1; display: grid; flex: 0 0 58px; height: 58px; place-items: center;
   border-radius: 17px; color: var(--tone); background: var(--tone-bg);
@@ -103,6 +105,15 @@ button { cursor: pointer; }
   border: 0; border-radius: 8px; font-weight: 700; white-space: nowrap;
 }
 .command-button:hover { background: #ffe188; }
+.command-button:disabled { opacity: .55; cursor: not-allowed; }
+.command-button--secondary { background: #e5f2f8; }
+.command-button--secondary:hover { background: #d7edf7; }
+.panel__actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.dataset-picker { max-width: 180px; min-height: 38px; padding: 0 8px; border: 1px solid #cadce6; border-radius: 8px; background: #fff; color: #17344d; }
+.job-error { display: block; max-width: 240px; color: #b14843; font-size: .75rem; }
+.empty-state { color: #738ba3; font-size: .88rem; }
+.action-notice { padding: 11px 14px; border: 1px solid #b9dbe9; border-radius: 8px; background: #ecf8fc; color: #17465c; font-size: .87rem; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 .data-table { width: 100%; border-collapse: collapse; }
 .data-table th, .data-table td { padding: 11px 10px; text-align: left; border-bottom: 1px solid #ebf0f3; font-size: .9rem; vertical-align: middle; }
 .data-table th { color: #6b839a; font-size: .77rem; text-transform: uppercase; }
@@ -131,6 +142,8 @@ button { cursor: pointer; }
   .panel--wide { grid-column: auto; }
 }
 @media (max-width: 520px) {
+  .primary-nav__item { min-width: 0; min-height: 54px; flex-direction: column; gap: 1px; font-size: .65rem; }
+  .primary-nav__item svg { width: 17px; height: 17px; }
   .count-grid { gap: 9px; }
   .dashboard-count { gap: 9px; min-height: 105px; padding: 11px; }
   .dashboard-count__icon { flex-basis: 42px; height: 42px; border-radius: 12px; }

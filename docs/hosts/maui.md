@@ -1,48 +1,9 @@
 # .NET MAUI
 
-The MAUI app lives in `apps/maui` and provides an optional native shell for the same Enterprise Platform domain.
+The optional native host lives in `apps/maui`. Its project targets Windows, Android, iOS, and Mac Catalyst; the local workflow in this repository is built for Windows.
 
-Supported targets from the project file:
+The dashboard reads the Workspace Server snapshot and can fall back to a bundled example. Its Windows workflow can pick a CSV file, import it into the server, run a KPI job, generate an HTML report, and open the latest completed report. The C# DTOs in `apps/maui/Contracts` follow `packages/contracts/openapi.json`.
 
-- Windows
-- Android
-- iOS
-- Mac Catalyst
+Run `npm run restore:maui` to restore dependencies and `npm run dev:maui` to launch the Windows host. `npm run build:maui:windows` builds the Windows target. A local Workspace Server is required for imports, jobs, and reports; the app starts it in development when needed. Other device targets need an API URL reachable from that device.
 
-Responsibilities:
-
-- native dashboard shell
-- project, dataset, job, and report overview
-- KPI cards
-- C# DTOs aligned with the OpenAPI dashboard contract
-- HTTP client for `http://127.0.0.1:8797/api/dashboard/snapshot`
-- starts the local workspace server in development when it is not already running
-- status badge for SQLite API data versus local fallback data
-- future bridge to backend APIs, offline storage, or native file pickers
-
-Contract source:
-
-- `packages/contracts/openapi.json`
-- `packages/contracts/examples/dashboard-snapshot.json`
-
-The MAUI project starts or calls the local workspace server first. It also bundles the dashboard snapshot as a raw fallback asset and deserializes it into C# records under `apps/maui/Contracts`. This keeps MAUI independent from TypeScript internals while still displaying the same model shape as the web and desktop apps.
-
-Setup:
-
-```bash
-npm run restore:maui
-```
-
-Run on Windows:
-
-```bash
-npm run dev:maui
-```
-
-Build a Windows package:
-
-```bash
-npm run build:maui:windows
-```
-
-MAUI is intentionally separate from the default `npm run build` path because it needs platform workloads that are not required for the Electron, web, Expo, and worker template.
+MAUI is separate from the default `npm run build` because it requires platform workloads.

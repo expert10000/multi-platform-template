@@ -37,6 +37,8 @@ CREATE TABLE IF NOT EXISTS jobs (
   requested_by TEXT NOT NULL,
   created_at TEXT NOT NULL,
   completed_at TEXT,
+  error_message TEXT,
+  result_path TEXT,
   FOREIGN KEY (project_id) REFERENCES projects(id),
   FOREIGN KEY (dataset_id) REFERENCES datasets(id),
   FOREIGN KEY (requested_by) REFERENCES users(id)

@@ -2,7 +2,7 @@
 
 This repository is a template for building desktop, web, mobile, service, and worker applications from a shared platform core. Instead of duplicating business logic for each application, the architecture shares the domain model, repository abstractions, service layer, OpenAPI contracts, worker protocols, and deployment strategy across every host.
 
-The same React interface runs in a browser and inside Electron, while .NET MAUI provides a separate native dashboard. Those three hosts use a shared HTTP and OpenAPI boundary to reach workspace data. The Expo/React Native mobile shell currently uses bundled demo data. Python and Node workers handle analytics and automation tasks.
+The same React interface runs in a browser and inside Electron, while .NET MAUI provides a separate native dashboard. Those hosts use a shared HTTP and OpenAPI boundary to reach workspace data. The Expo/React Native mobile shell reads that API when reachable and falls back to bundled demo data. Python and Node workers handle analytics and automation tasks.
 
 ![Application hosts, contracts, services, and workers architecture](docs/images/Z100.jpg)
 
@@ -34,7 +34,7 @@ Run `npm install` and then `npm run dev:web` from the repository root. This star
 
 ### React Web — application dashboard
 
-Open [React Web at 127.0.0.1:5184](http://127.0.0.1:5184/). The dashboard brings projects, datasets, jobs, and reports together with revenue, profit, and growth cards. The top navigation opens the dataset, job, and report views; the Workspace Monitor link opens the server view. Electron loads this same React interface in a desktop window.
+Open [React Web at 127.0.0.1:5184](http://127.0.0.1:5184/). The dashboard brings projects, datasets, jobs, and reports together with revenue, profit, and growth cards. Search filters the workspace lists; each count card opens its corresponding view. Import a CSV, queue KPI, trend, or HTML report work, then follow job status and open generated reports. Electron loads this same React interface in a desktop window.
 
 ![React Web dashboard showing workspace counts and analytics](docs/images/react-web.jpg)
 
@@ -44,7 +44,7 @@ Open [Workspace Monitor at 127.0.0.1:8797](http://127.0.0.1:8797/). It shows the
 
 ![Workspace Monitor showing data counts, service state, and application hosts](docs/images/workspace-monitor.jpg)
 
-The monitor is an operations view for the local Workspace Server. .NET MAUI has its own native window; the Expo/React Native starter currently uses bundled demo data. The screenshots show the seeded example workspace, so counts may differ after you add data.
+The monitor is an operations view for the local Workspace Server. .NET MAUI has its own native window; the Expo/React Native starter shows API data when connected and bundled examples when offline. The screenshots show the seeded example workspace, so counts may differ after you add data.
 
 ## Platform Stack
 
@@ -83,6 +83,7 @@ Install dependencies:
 
 ```bash
 npm install
+python -m pip install -r services/workers/python/requirements.txt
 ```
 
 Start Enterprise Platform Web:
@@ -90,6 +91,10 @@ Start Enterprise Platform Web:
 ```bash
 npm run dev:web
 ```
+
+To try the complete flow, open React Web, choose **Import CSV**, and select `data/sample/online-retail.csv`. Open **Jobs**, select the imported dataset, and choose **Run KPI**. When its status becomes **succeeded**, use **Open report**; **Generate HTML** creates a browser-readable report from the same dataset. Imported files, job states, and generated reports are stored under `.workspace/` and recorded in SQLite.
+
+Run the isolated API workflow check with `npm run test:flow`. The shared contract check is `npm run check:openapi`.
 
 Start only the local workspace server:
 
@@ -180,7 +185,7 @@ Web / Electron / MAUI
   -> SQLite
 ```
 
-The Expo/React Native starter uses the shared demo snapshot directly while its HTTP integration is pending.
+The Expo/React Native starter fetches the shared snapshot when the Workspace Server is reachable. Set `EXPO_PUBLIC_WORKSPACE_API_URL` to a reachable server URL when running on a physical device; see [mobile setup](apps/mobile/README.md).
 
 The starter UI shows:
 

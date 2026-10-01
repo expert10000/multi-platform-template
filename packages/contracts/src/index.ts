@@ -5,6 +5,7 @@ export type WorkerJobKind =
   | "sales.forecast"
   | "csv.process"
   | "report.pdf"
+  | "report.html"
   | "csv.import"
   | "data.validate"
   | "data.transform"

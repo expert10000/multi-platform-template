@@ -48,10 +48,38 @@
         }
       }
     },
+    "/datasets": {
+      "post": {
+        "operationId": "importDataset",
+        "summary": "Import a UTF-8 sales CSV into the workspace",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DatasetImportRequest" } } } },
+        "responses": {
+          "201": { "description": "Imported dataset metadata.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Dataset" } } } },
+          "400": { "description": "Invalid CSV or project." }
+        }
+      }
+    },
+    "/jobs/{id}": {
+      "get": {
+        "operationId": "getJob",
+        "summary": "Get persisted worker job progress and errors",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Job state.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Job" } } } } }
+      }
+    },
+    "/reports/{id}/content": {
+      "get": {
+        "operationId": "openReport",
+        "summary": "Open a generated HTML or JSON report",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Generated report content." } }
+      }
+    },
     "/worker/jobs": {
       "post": {
         "operationId": "runWorkerJob",
-        "summary": "Run a worker job",
+        "summary": "Queue a supported Python analytics job",
+        "description": "The local Workspace Server accepts sales.kpi, sales.forecast, and report.html with runtime python and params.datasetId. Other protocol kinds can be handled by separate workers.",
         "requestBody": {
           "required": true,
           "content": {
@@ -63,12 +91,12 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "Completed worker result.",
+          "202": {
+            "description": "Queued worker job. Poll /jobs/{id} for progress.",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/WorkerJobResult"
+                  "$ref": "#/components/schemas/Job"
                 }
               }
             }
@@ -102,6 +130,15 @@
       "DatasetKind": {
         "type": "string",
         "enum": ["sales", "inventory", "production", "unknown"]
+      },
+      "DatasetImportRequest": {
+        "type": "object",
+        "required": ["filename", "content"],
+        "properties": {
+          "filename": { "type": "string", "pattern": "\\.csv$" },
+          "content": { "type": "string", "description": "UTF-8 CSV, at most 5 MB." },
+          "projectId": { "$ref": "#/components/schemas/EntityId" }
+        }
       },
       "JobKind": {
         "type": "string",
@@ -147,7 +184,9 @@
           "status": { "$ref": "#/components/schemas/JobStatus" },
           "requestedBy": { "$ref": "#/components/schemas/EntityId" },
           "createdAt": { "type": "string", "format": "date-time" },
-          "completedAt": { "type": "string", "format": "date-time" }
+          "completedAt": { "type": "string", "format": "date-time" },
+          "errorMessage": { "type": "string" },
+          "resultPath": { "type": "string" }
         }
       },
       "Report": {
@@ -222,6 +261,7 @@
           "sales.forecast",
           "csv.process",
           "report.pdf",
+          "report.html",
           "csv.import",
           "data.validate",
           "data.transform",
@@ -257,6 +297,7 @@
           "output": { "$ref": "#/components/schemas/WorkerAssetRef" },
           "params": {
             "type": "object",
+            "description": "The local Workspace Server requires datasetId for Python analytics jobs.",
             "additionalProperties": true
           },
           "requestedAt": { "type": "string", "format": "date-time" }

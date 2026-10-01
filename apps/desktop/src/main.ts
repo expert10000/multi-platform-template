@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from "electron";
+import { app, BrowserWindow, session, shell } from "electron";
 import { spawn, type ChildProcess } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -10,6 +10,15 @@ let workspaceServerProcess: ChildProcess | null = null;
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const workspaceServerUrl = process.env.ANALYTICS_WORKSPACE_SERVER_URL ?? "http://127.0.0.1:8797";
 const repoRoot = join(__dirname, "../../..");
+const localServerOrigin = new URL(workspaceServerUrl).origin;
+
+function isAllowedExternalUrl(rawUrl: string) {
+  try {
+    const url = new URL(rawUrl);
+    return url.origin === localServerOrigin && ["/", "/api-docs", "/swagger", "/database"].includes(url.pathname) ||
+      url.origin === localServerOrigin && /^\/api\/reports\/[^/]+\/content$/.test(url.pathname);
+  } catch { return false; }
+}
 
 async function isWorkspaceServerAvailable() {
   try {
@@ -78,7 +87,7 @@ async function ensureWorkspaceServer() {
     env: {
       ...process.env,
       HOST: "127.0.0.1",
-      PORT: "8797",
+      PORT: new URL(workspaceServerUrl).port || "8797",
       WORKSPACE_DB_PATH: process.env.WORKSPACE_DB_PATH ?? (app.isPackaged ? join(app.getPath("userData"), "workspace.sqlite3") : join(repoRoot, ".workspace", "workspace.sqlite3"))
     },
     stdio: "ignore",
@@ -101,7 +110,20 @@ async function createMainWindow() {
     title: "Enterprise Platform",
     webPreferences: {
       contextIsolation: true,
-      nodeIntegration: false
+      nodeIntegration: false,
+      sandbox: true,
+      webSecurity: true
+    }
+  });
+
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (isAllowedExternalUrl(url)) void shell.openExternal(url);
+    return { action: "deny" };
+  });
+  mainWindow.webContents.on("will-navigate", (event, url) => {
+    if (url !== mainWindow?.webContents.getURL()) {
+      event.preventDefault();
+      if (isAllowedExternalUrl(url)) void shell.openExternal(url);
     }
   });
 
@@ -119,7 +141,10 @@ async function createMainWindow() {
   }
 }
 
-app.whenReady().then(createMainWindow);
+app.whenReady().then(() => {
+  session.defaultSession.setPermissionRequestHandler((_webContents, _permission, callback) => callback(false));
+  void createMainWindow();
+});
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {

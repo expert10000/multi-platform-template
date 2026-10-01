@@ -1,32 +1,9 @@
 # Web
 
-Enterprise Platform Web lives in `apps/web` and uses Vite + React.
+Enterprise Platform Web lives in `apps/web` and uses Vite + React. It is the browser UI loaded by the Electron shell, so both hosts present the same workspace.
 
-Responsibilities:
+The app shows projects, datasets, jobs, reports, and dashboard KPIs. Users can search those records, import a CSV dataset, submit KPI or trend analysis, generate an HTML report, and open completed reports. It polls the Workspace Server for job progress.
 
-- dashboard totals
-- KPI cards
-- asset browser
-- job list
-- report list
-- project overview
-- local workspace server integration
+Run it with `npm run dev:web` and build it with `npm run build:web`. The API client in `apps/web/src/workspaceApi.ts` uses the local Workspace Server at `http://127.0.0.1:8797` by default. Set `VITE_ANALYTICS_API_URL` to use a different local server port.
 
-Development:
-
-```bash
-npm run dev:web
-```
-
-Build:
-
-```bash
-npm run build:web
-```
-
-Enterprise Platform Web calls `http://127.0.0.1:8797/api/dashboard/snapshot` through `apps/web/src/workspaceApi.ts`. It falls back to the shared demo snapshot from `packages/domain` when the local Workspace Server is offline.
-
-The top bar shows a colored data source badge:
-
-- Green `SQLite API started` for workspace-server / SQLite data.
-- Amber `Local fallback` for bundled demo data.
+When the server is unavailable, the app displays the bundled demo snapshot and marks it as local fallback data. Import and job actions require a running server.

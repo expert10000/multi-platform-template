@@ -9,5 +9,8 @@ export function openWorkspaceDatabase(databasePath: string): Database.Database {
   db.pragma("journal_mode = WAL");
   db.pragma("foreign_keys = ON");
   db.exec(workspaceSchemaSql);
+  const jobColumns = db.prepare("PRAGMA table_info(jobs)").all() as Array<{ name: string }>;
+  if (!jobColumns.some((column) => column.name === "error_message")) db.exec("ALTER TABLE jobs ADD COLUMN error_message TEXT");
+  if (!jobColumns.some((column) => column.name === "result_path")) db.exec("ALTER TABLE jobs ADD COLUMN result_path TEXT");
   return db;
 }

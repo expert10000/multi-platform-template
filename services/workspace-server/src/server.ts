@@ -1,8 +1,10 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { spawn } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
+import { randomUUID } from "node:crypto";
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import type { Dataset, Job, JobKind } from "@enterprise-analytics/core";
 import { openWorkspaceDatabase, SqliteWorkspaceRepository } from "@enterprise-analytics/workspace";
 
 const host = process.env.HOST ?? "127.0.0.1";
@@ -11,17 +13,134 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "../../..");
 const defaultDatabasePath = resolve(__dirname, "../../../.workspace/workspace.sqlite3");
 const databasePath = resolve(process.env.WORKSPACE_DB_PATH ?? defaultDatabasePath);
+const webUrl = process.env.WORKSPACE_WEB_URL ?? "http://127.0.0.1:5184/";
 
 mkdirSync(dirname(databasePath), { recursive: true });
 
 const db = openWorkspaceDatabase(databasePath);
 const repository = new SqliteWorkspaceRepository(db);
 repository.seedDemoWorkspace();
+repository.recoverInterruptedJobs();
 
 type CountRow = { count: number };
 
 const openApiPath = join(repoRoot, "packages/contracts/openapi.json");
 const sampleDataPath = join(repoRoot, "data/sample");
+const uploadDirectory = join(repoRoot, ".workspace/uploads");
+const reportDirectory = join(repoRoot, ".workspace/reports");
+mkdirSync(uploadDirectory, { recursive: true });
+mkdirSync(reportDirectory, { recursive: true });
+
+function writeError(response: ServerResponse, status: number, code: string, message: string) {
+  writeJson(response, status, { error: { code, message } });
+}
+
+async function readJsonBody(request: IncomingMessage): Promise<unknown> {
+  const chunks: Buffer[] = [];
+  let size = 0;
+  for await (const chunk of request) {
+    const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+    size += buffer.length;
+    if (size > 6_000_000) throw new Error("Request exceeds the 6 MB limit.");
+    chunks.push(buffer);
+  }
+  return JSON.parse(Buffer.concat(chunks).toString("utf8")) as unknown;
+}
+
+function recordOf(value: unknown): Record<string, unknown> | undefined {
+  return value && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : undefined;
+}
+
+function countCsvRows(content: string): number {
+  let quoted = false;
+  let rows = 0;
+  let hasText = false;
+  for (let i = 0; i < content.length; i += 1) {
+    const char = content[i];
+    if (char === '"' && content[i + 1] === '"' && quoted) { i += 1; continue; }
+    if (char === '"') quoted = !quoted;
+    if (char === "\n" && !quoted) { if (hasText) rows += 1; hasText = false; }
+    else if (char !== "\r" && !quoted) hasText = true;
+  }
+  if (quoted) throw new Error("CSV has an unterminated quoted field.");
+  if (hasText) rows += 1;
+  if (rows < 2) throw new Error("CSV needs a header and at least one data row.");
+  return rows - 1;
+}
+
+function importDataset(body: unknown): Dataset {
+  const value = recordOf(body);
+  const name = value?.filename;
+  const content = value?.content;
+  if (typeof name !== "string" || !/^[^\\/]+\.csv$/i.test(name) || typeof content !== "string") {
+    throw new Error("Provide a CSV filename and UTF-8 content.");
+  }
+  if (Buffer.byteLength(content, "utf8") > 5_000_000) throw new Error("CSV exceeds the 5 MB import limit.");
+  const projectId = typeof value?.projectId === "string" ? value.projectId : repository.listProjects()[0]?.id;
+  if (!projectId || !repository.listProjects().some((project) => project.id === projectId)) throw new Error("Choose an existing project.");
+  const rowCount = countCsvRows(content);
+  const id = `dataset-${randomUUID()}`;
+  const sourcePath = `.workspace/uploads/${id}.csv`;
+  writeFileSync(resolve(repoRoot, sourcePath), content, "utf8");
+  const dataset: Dataset = { id, projectId, name, kind: "sales", sourcePath, rowCount, importedAt: new Date().toISOString() };
+  repository.upsertDataset(dataset);
+  return dataset;
+}
+
+function workerKind(kind: JobKind): "kpi" | "trend" | "report" {
+  return kind === "trend-analysis" ? "trend" : kind === "report-generation" ? "report" : "kpi";
+}
+
+function startWorkerJob(job: Job) {
+  const dataset = repository.getDataset(job.datasetId);
+  if (!dataset) return;
+  const extension = job.kind === "report-generation" ? "html" : "json";
+  const outputPath = `.workspace/reports/${job.id}.${extension}`;
+  const inputPath = resolve(repoRoot, dataset.sourcePath);
+  const absoluteOutputPath = resolve(repoRoot, outputPath);
+  const update = (status: Job["status"], errorMessage?: string) => {
+    repository.upsertJob({ ...job, status, errorMessage, resultPath: status === "succeeded" ? outputPath : undefined, completedAt: status === "running" ? undefined : new Date().toISOString() });
+  };
+  if (!inputPath.startsWith(repoRoot + "\\") && !inputPath.startsWith(repoRoot + "/")) { update("failed", "Dataset path is outside the repository."); return; }
+  if (!existsSync(inputPath)) { update("failed", "Dataset file is missing."); return; }
+  update("running");
+  const child = spawn(process.env.WORKSPACE_PYTHON ?? "python", [join(repoRoot, "services/workers/python/service/main.py"), "--job", workerKind(job.kind), "--input", inputPath, "--output", absoluteOutputPath], { cwd: repoRoot, windowsHide: true, stdio: ["ignore", "ignore", "pipe"] });
+  let stderr = "";
+  let finished = false;
+  let timedOut = false;
+  const timeout = setTimeout(() => { timedOut = true; child.kill(); }, 120_000);
+  child.stderr.on("data", (chunk: Buffer) => { stderr = (stderr + chunk.toString()).slice(-1800); });
+  const finish = (error?: string) => {
+    if (finished) return;
+    finished = true;
+    clearTimeout(timeout);
+    if (error || !existsSync(absoluteOutputPath)) { update("failed", (error || stderr.trim().split(/\r?\n/).at(-1) || "Worker produced no output.").slice(0, 300)); return; }
+    update("succeeded");
+    repository.upsertReport({ id: `report-${job.id}`, projectId: job.projectId, jobId: job.id, title: `${dataset.name} ${job.kind}`, format: extension, outputPath, createdAt: new Date().toISOString() });
+  };
+  child.on("error", (error) => finish(error.message));
+  child.on("close", (code) => finish(timedOut ? "Worker exceeded 120 seconds." : code === 0 ? undefined : stderr || `Worker exited with code ${code}.`));
+}
+
+function submitWorkerJob(body: unknown): Job {
+  const value = recordOf(body);
+  const params = recordOf(value?.params);
+  const datasetId = params?.datasetId;
+  const kind = value?.kind;
+  const requestId = value?.id;
+  const mapping: Record<string, JobKind> = { "sales.kpi": "kpi-analysis", "sales.forecast": "trend-analysis", "report.html": "report-generation" };
+  if (typeof datasetId !== "string" || typeof kind !== "string" || !mapping[kind] || value?.runtime !== "python" || typeof requestId !== "string" || !/^[a-zA-Z0-9_-]{1,80}$/.test(requestId) || typeof value?.requestedAt !== "string") {
+    throw new Error("Provide a datasetId in params and a supported Python job kind: sales.kpi, sales.forecast, or report.html.");
+  }
+  if (repository.getJob(requestId)) throw new Error("Job ID already exists.");
+  const dataset = repository.getDataset(datasetId);
+  if (!dataset) throw new Error("Dataset not found.");
+  if (dataset.kind !== "sales") throw new Error("The Python analytics worker requires a sales dataset.");
+  const job: Job = { id: requestId, projectId: dataset.projectId, datasetId, kind: mapping[kind], status: "queued", requestedBy: "user-alex", createdAt: new Date().toISOString() };
+  repository.upsertJob(job);
+  setImmediate(() => startWorkerJob(job));
+  return job;
+}
 
 function setCorsHeaders(response: ServerResponse) {
   response.setHeader("Access-Control-Allow-Origin", "*");
@@ -107,7 +226,7 @@ function getRuntimeItems() {
     { label: "SQLite", state: "Open", detail: "This server has opened the database file.", tone: "ok" },
     { label: "HTTP API", state: "Serving", detail: `Listening at http://${host}:${port}/api.`, tone: "ok" },
     { label: "OpenAPI contract", state: existsSync(openApiPath) ? "Available" : "Missing", detail: "Schema served at /openapi.json.", tone: existsSync(openApiPath) ? "ok" : "bad" },
-    { label: "Worker job API", state: "Not wired", detail: "POST /api/worker/jobs currently returns 501; run workers through their CLI scripts.", tone: "pending" }
+    { label: "Worker job API", state: "Ready", detail: "Python analytics jobs are queued through POST /api/worker/jobs.", tone: "ok" }
   ] as const;
 }
 
@@ -256,7 +375,7 @@ function writeStatusPage(response: ServerResponse) {
     .tool-grid a { padding: 10px 12px; color: #166377; background: #fff; border: 1px solid #dce9f0; border-radius: 8px; font-size: 0.83rem; font-weight: 800; text-decoration: none; }
     .tool-grid a:hover { text-decoration: underline; }
     .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-    .action { padding: 8px 11px; color: #135368; background: #e5f3f3; border-radius: 8px; font-size: 0.83rem; font-weight: 800; text-decoration: none; }
+    .action { padding: 8px 11px; color: #135368; background: #e5f3f3; border: 0; border-radius: 8px; font-size: 0.83rem; font-weight: 800; text-decoration: none; cursor: pointer; }
     .action.danger { color: #84372d; background: #ffe6e0; }
     @media (max-width: 1050px) { .metric-grid, .status-grid, .app-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .hero-wave { width: 38%; } }
     @media (max-width: 680px) { body { padding: 10px; } .shell { padding: 13px; } .hero { gap: 15px; padding: 20px; } .hero-mark { width: 58px; height: 58px; } .hero-mark svg { width: 33px; height: 33px; } .hero-wave { display: none; } .badge { top: 12px; right: 12px; } .hero-copy { padding-top: 25px; } .status-grid { grid-template-columns: 1fr; } .surface-tabs { display: flex; } .surface-tabs a { flex: 1; text-align: center; padding: 9px 8px; } }
@@ -266,7 +385,7 @@ function writeStatusPage(response: ServerResponse) {
 <body>
   <main>
     <nav class="surface-tabs" aria-label="Platform views">
-      <a href="http://127.0.0.1:5184/" target="_blank" rel="noopener noreferrer">React Web</a>
+      <a href="${escapeHtml(webUrl)}" target="_blank" rel="noopener noreferrer">React Web</a>
       <a class="active" href="/" aria-current="page">Workspace Monitor</a>
     </nav>
     <div class="shell">
@@ -298,10 +417,10 @@ function writeStatusPage(response: ServerResponse) {
       <section aria-labelledby="apps-title">
         <div class="section-heading">${monitorIcon("monitor")}<div><h2 id="apps-title">Application hosts</h2><p class="section-lead">Launch and access the workspace using different client applications.</p></div></div>
         <div class="app-grid">
-          <article class="app-card blue"><div class="app-top"><span class="app-icon">${monitorIcon("globe")}</span><div class="app-copy"><span class="tag">Browser</span><h3>React Web</h3><p>Analytics dashboard and workspace UI.</p></div></div><a class="app-action primary" href="http://127.0.0.1:5184/" target="_blank" rel="noopener noreferrer">Open Web ↗</a></article>
+          <article class="app-card blue"><div class="app-top"><span class="app-icon">${monitorIcon("globe")}</span><div class="app-copy"><span class="tag">Browser</span><h3>React Web</h3><p>Analytics dashboard and workspace UI.</p></div></div><a class="app-action primary" href="${escapeHtml(webUrl)}" target="_blank" rel="noopener noreferrer">Open Web ↗</a></article>
           <article class="app-card green"><div class="app-top"><span class="app-icon">${monitorIcon("monitor")}</span><div class="app-copy"><span class="tag">Desktop</span><h3>Electron</h3><p>The same React UI in a desktop window.</p></div></div><a class="app-action" href="/launch/desktop">Launch Electron →</a></article>
           <article class="app-card purple"><div class="app-top"><span class="app-icon">${monitorIcon("windows")}</span><div class="app-copy"><span class="tag">Native C#</span><h3>.NET MAUI</h3><p>A separate native dashboard.</p></div></div><a class="app-action" href="/launch/maui">Launch on Windows →</a></article>
-          <article class="app-card blue"><div class="app-top"><span class="app-icon">${monitorIcon("phone")}</span><div class="app-copy"><span class="tag">Expo</span><h3>React Native</h3><p>Mobile starter using demo data.</p></div></div><a class="app-action" href="https://github.com/expert10000/multi-platform-template/tree/main/apps/mobile" target="_blank" rel="noopener noreferrer">View project ↗</a></article>
+          <article class="app-card blue"><div class="app-top"><span class="app-icon">${monitorIcon("phone")}</span><div class="app-copy"><span class="tag">Expo</span><h3>React Native</h3><p>Mobile dashboard with API data and offline examples.</p></div></div><a class="app-action" href="https://github.com/expert10000/multi-platform-template/tree/main/apps/mobile" target="_blank" rel="noopener noreferrer">View project ↗</a></article>
         </div>
       </section>
 
@@ -309,7 +428,7 @@ function writeStatusPage(response: ServerResponse) {
         <summary>${monitorIcon("code")}Developer details and demo controls</summary>
         <div class="technical">
           <div class="database"><strong>SQLite database file</strong><code>${escapeHtml(status.databasePath)}</code></div>
-          <p>Users: ${metrics[4].value} · Sample files: ${metrics[5].value}. The worker job API is not wired yet; worker scripts run from the command line.</p>
+          <p>Users: ${metrics[4].value} · Sample files: ${metrics[5].value}. Python analytics jobs can also run through the local API.</p>
           <div class="tool-grid">
             <a href="/api-docs">API endpoint guide ↗</a>
             <a href="/swagger">OpenAPI route list ↗</a>
@@ -320,8 +439,8 @@ function writeStatusPage(response: ServerResponse) {
           </div>
           <p>Seed adds or updates example records. Reset deletes all workspace records in this database, then restores the built-in examples.</p>
           <div class="actions">
-            <a class="action" href="/action/seed">Seed examples</a>
-            <a class="action danger" href="/action/reset-demo" onclick="return confirm('Delete all workspace records in this SQLite file, then restore the built-in examples?')">Reset to examples</a>
+            <form method="post" action="/action/seed"><button class="action" type="submit">Seed examples</button></form>
+            <form method="post" action="/action/reset-demo" onsubmit="return confirm('Delete all workspace records in this SQLite file, then restore the built-in examples?')"><button class="action danger" type="submit">Reset to examples</button></form>
           </div>
         </div>
       </details>
@@ -396,10 +515,13 @@ function writeApiDocsPage(response: ServerResponse) {
       <tbody>
         <tr><td>GET</td><td><code>/api/status</code></td><td>Runtime and storage status.</td></tr>
         <tr><td>GET</td><td><code>/api/dashboard/snapshot</code></td><td>Dashboard data from SQLite.</td></tr>
-        <tr><td>POST</td><td><code>/api/worker/jobs</code></td><td>Worker contract placeholder.</td></tr>
+        <tr><td>POST</td><td><code>/api/datasets</code></td><td>Import a sales CSV.</td></tr>
+        <tr><td>POST</td><td><code>/api/worker/jobs</code></td><td>Queue a Python analytics job.</td></tr>
+        <tr><td>GET</td><td><code>/api/jobs/{id}</code></td><td>Read job progress and errors.</td></tr>
+        <tr><td>GET</td><td><code>/api/reports/{id}/content</code></td><td>Open a generated report.</td></tr>
         <tr><td>GET</td><td><code>/database</code></td><td>SQLite table browser.</td></tr>
-        <tr><td>GET</td><td><code>/action/seed</code></td><td>Seed demo records.</td></tr>
-        <tr><td>GET</td><td><code>/action/reset-demo</code></td><td>Reset then seed demo records.</td></tr>
+        <tr><td>POST</td><td><code>/action/seed</code></td><td>Seed demo records.</td></tr>
+        <tr><td>POST</td><td><code>/action/reset-demo</code></td><td>Reset then seed demo records.</td></tr>
       </tbody>
     </table>
   </main>
@@ -536,17 +658,17 @@ function launchWebDevServer() {
 
 function launchTarget(target: "web" | "desktop" | "maui" | "mobile") {
   if (target === "web") {
-    launchWebDevServer();
-    openUrl("http://127.0.0.1:5184/");
+    if (!process.env.WORKSPACE_WEB_URL) launchWebDevServer();
+    openUrl(webUrl);
     return "Enterprise Platform Web launch requested and browser open requested.";
   }
 
   if (target === "desktop") {
-    launchWebDevServer();
+    if (!process.env.WORKSPACE_WEB_URL) launchWebDevServer();
     const electronPath = join(repoRoot, "apps/desktop/node_modules/electron/dist/electron.exe");
     if (process.platform === "win32" && existsSync(electronPath)) {
       runDetached(electronPath, ["."], false, join(repoRoot, "apps/desktop"), {
-        ANALYTICS_WEB_URL: "http://127.0.0.1:5184"
+        ANALYTICS_WEB_URL: webUrl
       });
     } else {
       runDetached(process.platform === "win32" ? "npm.cmd" : "npm", ["--workspace", "@enterprise-analytics/desktop", "run", "electron:dev"]);
@@ -594,6 +716,12 @@ function getRoute(request: IncomingMessage) {
 
 const server = createServer((request, response) => {
   const route = getRoute(request);
+
+  const origin = request.headers.origin;
+  if (origin && !/^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(origin) && origin !== "null") {
+    writeError(response, 403, "origin_denied", "Only local application origins may call this server.");
+    return;
+  }
 
   if (route.method === "OPTIONS") {
     setCorsHeaders(response);
@@ -652,13 +780,13 @@ const server = createServer((request, response) => {
     return;
   }
 
-  if (route.method === "GET" && route.pathname === "/action/seed") {
+  if (route.method === "POST" && route.pathname === "/action/seed") {
     repository.seedDemoWorkspace();
     writeMessagePage(response, "Seed Workspace", "Demo workspace records were seeded.");
     return;
   }
 
-  if (route.method === "GET" && route.pathname === "/action/reset-demo") {
+  if (route.method === "POST" && route.pathname === "/action/reset-demo") {
     resetDemoData();
     writeMessagePage(response, "Reset Demo Data", "Demo workspace data was reset and seeded again.");
     return;
@@ -669,13 +797,40 @@ const server = createServer((request, response) => {
     return;
   }
 
+  if (route.method === "POST" && route.pathname === "/api/datasets") {
+    void readJsonBody(request).then((body) => {
+      const dataset = importDataset(body);
+      writeJson(response, 201, dataset);
+    }).catch((error: unknown) => writeError(response, 400, "invalid_dataset", error instanceof Error ? error.message : "Dataset import failed."));
+    return;
+  }
+
+  const jobMatch = /^\/api\/jobs\/([^/]+)$/.exec(route.pathname);
+  if (route.method === "GET" && jobMatch) {
+    const job = repository.getJob(jobMatch[1]);
+    if (!job) writeError(response, 404, "not_found", "Job not found.");
+    else writeJson(response, 200, job);
+    return;
+  }
+
+  const reportMatch = /^\/api\/reports\/([^/]+)\/content$/.exec(route.pathname);
+  if (route.method === "GET" && reportMatch) {
+    const report = repository.getReport(reportMatch[1]);
+    if (!report) { writeError(response, 404, "not_found", "Report not found."); return; }
+    const reportPath = resolve(repoRoot, report.outputPath);
+    if (!reportPath.startsWith(reportDirectory + "\\") && !reportPath.startsWith(reportDirectory + "/")) { writeError(response, 404, "not_found", "Only generated reports can be opened here."); return; }
+    if (!existsSync(reportPath)) { writeError(response, 404, "not_found", "Report file is missing."); return; }
+    setCorsHeaders(response);
+    response.writeHead(200, { "Content-Type": report.format === "html" ? "text/html; charset=utf-8" : "application/json; charset=utf-8", "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'", "X-Content-Type-Options": "nosniff" });
+    response.end(readFileSync(reportPath));
+    return;
+  }
+
   if (route.method === "POST" && route.pathname === "/api/worker/jobs") {
-    writeJson(response, 501, {
-      error: {
-        code: "not_implemented",
-        message: "Worker job execution is defined in OpenAPI but not wired to this local workspace server yet."
-      }
-    });
+    void readJsonBody(request).then((body) => {
+      const job = submitWorkerJob(body);
+      writeJson(response, 202, job);
+    }).catch((error: unknown) => writeError(response, 400, "invalid_job", error instanceof Error ? error.message : "Job submission failed."));
     return;
   }
 

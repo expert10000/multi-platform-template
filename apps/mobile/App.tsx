@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { BarChart3, Database, FileText, Play, Settings } from "lucide-react-native";
+import { Linking, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { BarChart3, Database, FileText, Play, RefreshCw } from "lucide-react-native";
 import { demoDashboardSnapshot, formatCurrency, formatPercent, type DashboardSnapshot } from "@enterprise-analytics/core";
 
 type MobileView = "dashboard" | "datasets" | "jobs" | "reports";
@@ -19,10 +19,26 @@ const navItems: Array<{ id: MobileView; label: string; Icon: typeof BarChart3 }>
   { id: "jobs", label: "Jobs", Icon: Play },
   { id: "reports", label: "Reports", Icon: FileText }
 ];
+const apiBaseUrl = process.env.EXPO_PUBLIC_WORKSPACE_API_URL ?? (Platform.OS === "android" ? "http://10.0.2.2:8797/api" : "http://127.0.0.1:8797/api");
 
 export default function App() {
   const [activeView, setActiveView] = useState<MobileView>("dashboard");
-  const dashboard = useMemo<DashboardSnapshot>(() => demoDashboardSnapshot, []);
+  const [dashboard, setDashboard] = useState<DashboardSnapshot>(demoDashboardSnapshot);
+  const [source, setSource] = useState("Connecting to workspace...");
+
+  const refresh = async () => {
+    try {
+      const response = await fetch(`${apiBaseUrl}/dashboard/snapshot`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      setDashboard(await response.json() as DashboardSnapshot);
+      setSource("Workspace Server");
+    } catch {
+      setDashboard(demoDashboardSnapshot);
+      setSource("Demo data · set EXPO_PUBLIC_WORKSPACE_API_URL for a device");
+    }
+  };
+
+  useEffect(() => { void refresh(); }, []);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -36,12 +52,13 @@ export default function App() {
               <Text style={styles.title}>{viewTitles[activeView]}</Text>
             </View>
           </View>
-          <TouchableOpacity accessibilityLabel="Workspace settings" style={styles.iconButton}>
-            <Settings size={19} color="#f8faf8" />
+          <TouchableOpacity accessibilityLabel="Refresh workspace data" onPress={() => void refresh()} style={styles.iconButton}>
+            <RefreshCw size={19} color="#f8faf8" />
           </TouchableOpacity>
         </View>
 
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <Text style={styles.sourceText}>{source}</Text>
           {activeView === "dashboard" ? <DashboardView dashboard={dashboard} /> : null}
           {activeView === "datasets" ? <DatasetsView dashboard={dashboard} /> : null}
           {activeView === "jobs" ? <JobsView dashboard={dashboard} /> : null}
@@ -128,7 +145,9 @@ function ReportsView({ dashboard }: { dashboard: DashboardSnapshot }) {
   return (
     <Panel title="Reports" detail="Executive summaries and published outputs">
       {dashboard.recentReports.map((report) => (
-        <ListRow key={report.id} title={report.title} meta={report.format.toUpperCase()} detail={report.outputPath} />
+        <TouchableOpacity key={report.id} disabled={!report.outputPath.startsWith(".workspace/reports/")} onPress={() => void Linking.openURL(`${apiBaseUrl}/reports/${encodeURIComponent(report.id)}/content`)}>
+          <ListRow title={report.title} meta={report.format.toUpperCase()} detail={report.outputPath.startsWith(".workspace/reports/") ? "Open generated report ↗" : report.outputPath} />
+        </TouchableOpacity>
       ))}
       <ListRow title="Report Pipeline" meta="Analysis -> Summary -> Publish" detail="Worker results become HTML or PDF-ready artifacts" />
     </Panel>
@@ -168,6 +187,7 @@ function ListRow({ title, meta, detail }: { title: string; meta: string; detail:
 }
 
 const styles = StyleSheet.create({
+  sourceText: { color: "#5b7795", fontSize: 12, fontWeight: "700" },
   safeArea: {
     flex: 1,
     backgroundColor: "#f4f6f3"

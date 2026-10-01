@@ -91,12 +91,14 @@ export class SqliteWorkspaceRepository {
 
   upsertJob(job: Job) {
     this.db.prepare(`
-      INSERT INTO jobs (id, project_id, dataset_id, kind, status, requested_by, created_at, completed_at)
-      VALUES (@id, @projectId, @datasetId, @kind, @status, @requestedBy, @createdAt, @completedAt)
+      INSERT INTO jobs (id, project_id, dataset_id, kind, status, requested_by, created_at, completed_at, error_message, result_path)
+      VALUES (@id, @projectId, @datasetId, @kind, @status, @requestedBy, @createdAt, @completedAt, @errorMessage, @resultPath)
       ON CONFLICT(id) DO UPDATE SET
         status = excluded.status,
-        completed_at = excluded.completed_at
-    `).run({ ...job, completedAt: job.completedAt ?? null });
+        completed_at = excluded.completed_at,
+        error_message = excluded.error_message,
+        result_path = excluded.result_path
+    `).run({ ...job, completedAt: job.completedAt ?? null, errorMessage: job.errorMessage ?? null, resultPath: job.resultPath ?? null });
   }
 
   upsertReport(report: Report) {
@@ -115,7 +117,7 @@ export class SqliteWorkspaceRepository {
       SELECT id, name, description, owner_id AS ownerId, created_at AS createdAt, updated_at AS updatedAt
       FROM projects
       ORDER BY updated_at DESC
-      LIMIT 10
+      LIMIT 100
     `).all() as Project[];
   }
 
@@ -124,16 +126,16 @@ export class SqliteWorkspaceRepository {
       SELECT id, project_id AS projectId, name, kind, source_path AS sourcePath, row_count AS rowCount, imported_at AS importedAt
       FROM datasets
       ORDER BY imported_at DESC
-      LIMIT 10
+      LIMIT 100
     `).all() as Dataset[];
   }
 
   listJobs(): Job[] {
     return this.db.prepare(`
-      SELECT id, project_id AS projectId, dataset_id AS datasetId, kind, status, requested_by AS requestedBy, created_at AS createdAt, completed_at AS completedAt
+      SELECT id, project_id AS projectId, dataset_id AS datasetId, kind, status, requested_by AS requestedBy, created_at AS createdAt, completed_at AS completedAt, error_message AS errorMessage, result_path AS resultPath
       FROM jobs
       ORDER BY created_at DESC
-      LIMIT 10
+      LIMIT 100
     `).all() as Job[];
   }
 
@@ -142,8 +144,24 @@ export class SqliteWorkspaceRepository {
       SELECT id, project_id AS projectId, job_id AS jobId, title, format, output_path AS outputPath, created_at AS createdAt
       FROM reports
       ORDER BY created_at DESC
-      LIMIT 10
+      LIMIT 100
     `).all() as Report[];
+  }
+
+  getDataset(id: string): Dataset | undefined {
+    return this.db.prepare(`SELECT id, project_id AS projectId, name, kind, source_path AS sourcePath, row_count AS rowCount, imported_at AS importedAt FROM datasets WHERE id = ?`).get(id) as Dataset | undefined;
+  }
+
+  getJob(id: string): Job | undefined {
+    return this.db.prepare(`SELECT id, project_id AS projectId, dataset_id AS datasetId, kind, status, requested_by AS requestedBy, created_at AS createdAt, completed_at AS completedAt, error_message AS errorMessage, result_path AS resultPath FROM jobs WHERE id = ?`).get(id) as Job | undefined;
+  }
+
+  getReport(id: string): Report | undefined {
+    return this.db.prepare(`SELECT id, project_id AS projectId, job_id AS jobId, title, format, output_path AS outputPath, created_at AS createdAt FROM reports WHERE id = ?`).get(id) as Report | undefined;
+  }
+
+  recoverInterruptedJobs() {
+    this.db.prepare("UPDATE jobs SET status = 'failed', completed_at = ?, error_message = 'Worker interrupted by server restart.' WHERE status IN ('queued', 'running')").run(new Date().toISOString());
   }
 
   private count(tableName: "projects" | "datasets" | "jobs" | "reports") {

@@ -42,6 +42,8 @@ export interface Job {
   requestedBy: EntityId;
   createdAt: string;
   completedAt?: string;
+  errorMessage?: string;
+  resultPath?: string;
 }
 
 export interface Report {
